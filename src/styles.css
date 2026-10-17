@@ -237,6 +237,17 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .method p { margin: 0 0 8px; }
 .method a { color: var(--ink-2); }
 
+/* disclaimer: a link on the hosted site, an expandable section on the single-file page */
+.method .disc-link { margin-top: 12px; }
+.method .disc-link a { font-family: var(--font-sc); font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.disc { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 10px; }
+.disc > summary { cursor: pointer; font-family: var(--font-sc); font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.disc > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.disc section { margin: 12px 0 0; }
+.disc h5 { font-family: var(--font-sc); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin: 0 0 4px; }
+.disc p { margin: 0 0 7px; }
+.disc a { color: var(--ink); }
+
 /* detail */
 .back { font-family: var(--font-sc); font-size: 0.82rem; color: var(--ink-2); background: transparent; border: 0; padding: 0; cursor: pointer; margin-bottom: 14px; letter-spacing: 0.04em; }
 .back:hover { color: var(--ink); }

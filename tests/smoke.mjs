@@ -24,7 +24,21 @@ const server = http.createServer((req, res) => {
 await new Promise(r => server.listen(0, r));
 const URL_ = `http://127.0.0.1:${server.address().port}/`;
 
-const candidates = [process.env.CHROMIUM_PATH, '/opt/pw-browsers/chromium'].filter(Boolean);
+// Playwright's own default is the chrome-headless-shell build, which `npx playwright install chromium`
+// does not always provide; fall back to any full Chromium it did install.
+const installed = () => {
+  const base = process.env.PLAYWRIGHT_BROWSERS_PATH
+    || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Caches', 'ms-playwright')
+      : path.join(process.env.HOME || '', '.cache', 'ms-playwright'));
+  if (!fs.existsSync(base)) return [];
+  return fs.readdirSync(base).filter(d => d.startsWith('chromium-')).sort().reverse().flatMap(d => [
+    path.join(base, d, 'chrome-mac-arm64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
+    path.join(base, d, 'chrome-mac', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
+    path.join(base, d, 'chrome-linux', 'chrome'),
+    path.join(base, d, 'chrome-win', 'chrome.exe'),
+  ]);
+};
+const candidates = [process.env.CHROMIUM_PATH, '/opt/pw-browsers/chromium', ...installed()].filter(Boolean);
 const executablePath = candidates.find(p => fs.existsSync(p));
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
 
@@ -81,6 +95,28 @@ try {
     await page.close();
   }
 
+  // ── disclaimer page, reached the way a visitor reaches it
+  {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const errs = watch(page);
+    await page.goto(URL_); await page.waitForTimeout(1200);
+    await page.locator('.method .disc-link a').scrollIntoViewIfNeeded();
+    await page.click('.method .disc-link a');
+    await page.waitForLoadState('load');
+    check(new URL(page.url()).pathname.endsWith('/disclaimer.html'), 'gazetteer links to the disclaimer page');
+    check((await page.innerText('.doc h1')) === 'Disclaimer & credits', 'disclaimer page has its heading');
+    const heads = await page.locator('.doc section h2').allInnerTexts();
+    check(heads.length >= 8, `disclaimer page lists ${heads.length} sections`);
+    check(heads.some(h => /unofficial/i.test(h)), 'disclaimer states the unofficial status');
+    check(heads.some(h => /trademark/i.test(h)), 'disclaimer covers trademarks');
+    // the page must be readable with no JS and must not inherit the app's no-scroll shell
+    check(await page.evaluate(() => getComputedStyle(document.body).overflow !== 'hidden'), 'disclaimer page scrolls');
+    await page.click('.doc .back'); await page.waitForLoadState('load');
+    check((await page.locator('#map').count()) === 1, 'disclaimer page links back to the atlas');
+    check(errs.length === 0, `no script errors on the disclaimer page${errs.length ? `: ${errs[0]}` : ''}`);
+    await page.close();
+  }
+
   // ── phone
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -107,6 +143,9 @@ try {
     await page.waitForTimeout(1000);
     check((await page.locator('#map .mk').count()) > 20, 'single-file page renders the map');
     check((await page.locator('#map .relief').getAttribute('href')).startsWith('data:image/jpeg'), 'single-file page inlines the relief');
+    // no second page to link to here, so the notices must travel inside the page
+    check((await page.locator('details.disc').count()) === 1, 'single-file page carries the disclaimer inline');
+    check(!(await page.content()).includes('disclaimer.html'), 'single-file page has no link to a missing page');
     check(errs.length === 0, `no script errors in the single-file page${errs.length ? `: ${errs[0]}` : ''}`);
     await page.close();
   }

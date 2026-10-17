@@ -1,6 +1,6 @@
 # Castlevania Atlas
 
-An interactive map of every place in Netflix's *Castlevania* (2017–2021) and *Castlevania: Nocturne*
+An interactive map of the places in Netflix's *Castlevania* (2017–2021) and *Castlevania: Nocturne*
 (2023–2025), set on real geography. Each place opens a card with what happens there episode by episode,
 who is involved, the real history behind it, and how its position was worked out.
 
@@ -40,6 +40,7 @@ scripts/
   bundle.js           builds dist/site/ and dist/castlevania-atlas.html
 src/
   head.html, markup.html, styles.css
+  disclaimer.js       the disclaimer text, shared by the page and the in-app panel
   js/                 ES modules, bundled by esbuild
     main.js           entry point
     core.js           shared data, state and DOM helpers
@@ -74,7 +75,7 @@ npm run geo        # Natural Earth layers, projection parameters, relief texture
 ### Outputs
 
 - `dist/site/`: a static site with no third-party requests (fonts are self-hosted). Upload the folder to any
-  static host.
+  static host. Includes `disclaimer.html`, linked from the foot of the gazetteer.
 - `dist/castlevania-atlas.html`: the same map as one self-contained file (used for the Claude artifact).
 
 ## Editing the content
@@ -92,6 +93,16 @@ rather than guessing.
 The site is plain static files, so any static host works. Build command `npm run build`, output directory
 `dist/site`. GitHub Pages from a private repository needs a paid GitHub plan; Cloudflare Pages and Netlify can
 build from a private repository on their free plans.
+
+## Disclaimer
+
+`src/disclaimer.js` holds the notices (unofficial status, trademarks, fair use, accuracy, privacy, a
+contact route for rights holders) in one place. The build renders them two ways: as `dist/site/disclaimer.html`
+for the hosted site, and inline in a collapsed section on the single-file page, which has no second page to
+link to. Edit that one file and both follow; only the text each output uses is bundled.
+
+The contact link points at the repository's issues page. Change `CONTACT` in `src/disclaimer.js` if you would
+rather publish an email address.
 
 ## Licence
 

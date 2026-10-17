@@ -74,7 +74,8 @@ export function renderIndex() {
     <p><b>Pictures.</b> Stills from the series belong to Netflix and are not copied here; each place links to its stills on the fan wiki, and real places link to period art and photographs on Wikimedia Commons.</p>
     <p>Base map: Natural Earth coastlines and rivers (public domain) with shaded relief from the basemap-data package (MIT), drawn in a conic projection centred on the Danube. Wallachia is outlined from the modern counties that formed it; Styria from today's state.</p>
     <p>Sources: episode dialogue and summaries cross-checked against <a href="https://en.wikipedia.org/wiki/Castlevania_(TV_series)" target="_blank" rel="noopener">Wikipedia</a>, the <a href="https://castlevania.fandom.com/" target="_blank" rel="noopener">Castlevania Wiki</a> and <a href="https://www.netflix.com/tudum/articles/castlevania-nocturne-season-2-release-date" target="_blank" rel="noopener">Netflix Tudum</a>.</p>
-    <p><b>Unofficial.</b> A fan-made reference, not affiliated with or endorsed by Konami, Netflix or the series' producers. Castlevania is a trademark of Konami.</p></div>`;
+    <p><b>Unofficial.</b> A fan-made reference, not affiliated with or endorsed by Konami, Netflix or the series' producers. Castlevania is a trademark of Konami.</p>
+    ${disclaimerFooter()}</div>`;
   gaz.innerHTML = h;
   gaz.querySelectorAll('.items button').forEach(b => b.addEventListener('click', () => select(b.dataset.id, true)));
   $('#story-cta').addEventListener('click', () => storyOpen(0));
@@ -83,6 +84,13 @@ export function renderIndex() {
   if (wc) wc.addEventListener('click', () => setWho(''));
   wireWorld();
 }
+
+// The hosted site links to its disclaimer page; the single-file page, having nowhere to link,
+// carries the same text in a collapsed section. Both values come from the bundler
+// (src/disclaimer.js is the one source), so only the text that is used is shipped.
+const disclaimerFooter = () => HOSTED
+  ? `<p class="disc-link"><a href="disclaimer.html">Disclaimer &amp; credits ↗</a></p>`
+  : `<details class="disc"><summary>Disclaimer &amp; credits</summary>${DISCLAIMER_HTML}</details>`;
 
 const fmtLL = (lat, lon) => `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(4)}° ${lon >= 0 ? 'E' : 'W'}`;
 const ext = (href, label, note) => `<li><a href="${href}" target="_blank" rel="noopener">${esc(label)} ↗</a>${note ? `<span>${esc(note)}</span>` : ''}</li>`;
