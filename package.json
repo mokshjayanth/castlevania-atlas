@@ -1,0 +1,29 @@
+{
+  "name": "castlevania-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unofficial interactive atlas of every location in Netflix's Castlevania and Castlevania: Nocturne, placed on real geography.",
+  "type": "module",
+  "scripts": {
+    "geo:layers": "node geo/prepare-layers.js",
+    "geo:projection": "node scripts/projection.js",
+    "geo:relief": "python3 geo/relief.py",
+    "geo": "npm run geo:layers && npm run geo:projection && npm run geo:relief",
+    "project": "node scripts/project.js",
+    "bundle": "node scripts/bundle.js",
+    "build": "npm run project && npm run bundle",
+    "test": "node tests/smoke.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/alegreya": "^5.3.0",
+    "@fontsource/alegreya-sc": "^5.3.0",
+    "@fontsource/cinzel": "^5.3.0",
+    "@fontsource/im-fell-english": "^5.3.0",
+    "d3-geo": "^3.1.1",
+    "esbuild": "^0.28.2",
+    "mapshaper": "^0.7.87",
+    "playwright-core": "^1.64.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}
