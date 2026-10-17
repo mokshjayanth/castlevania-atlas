@@ -1,7 +1,7 @@
 // Everything drawn above the base map: place markers, uncertainty rings, labels, journeys,
 // context cities and the "location unrevealed" vignette. Positions are recomputed on every draw
 // so markers and text stay the same size at any zoom.
-import { G, S, $, el, byId, TIER, RANK, shown, matchWho } from './core.js';
+import { G, S, $, el, byId, TIER, RANK, shown, matchFilters } from './core.js';
 import { glyph } from './glyphs.js';
 import { scr } from './view.js';
 import { select } from './gazetteer.js';
@@ -141,7 +141,7 @@ export function drawOverlay() {
       }
       if (m.edge) { const rr = Math.max(m.p.rpx * S.k, 14); x += m.ox * rr; y += m.oy * rr; }
     }
-    const w = matchWho(m.p);
+    const w = matchFilters(m.p);
     m.x = x; m.y = y; m.on = on && w && vis(x, y);
     m.g.classList.toggle('dim', on && !w);
     if (m.zone) m.zone.classList.toggle('dim', on && !w);
@@ -167,8 +167,8 @@ export function drawOverlay() {
     VG.setAttribute('transform', tr); VGc.setAttribute('transform', tr);
     VG.classList.toggle('era-hide', vgCompact()); VGc.classList.toggle('era-hide', !vgCompact());
     vigG.classList.toggle('era-hide', S.series === 'noc'); }
-  for (const v of vgMarks) { v.g.classList.toggle('sel', S.sel === v.p.id || S.hl.includes(v.p.id)); v.g.classList.toggle('dim', !matchWho(v.p)); }
-  VGc.classList.toggle('dim', !vgMarks.some(v => matchWho(v.p)));
+  for (const v of vgMarks) { v.g.classList.toggle('sel', S.sel === v.p.id || S.hl.includes(v.p.id)); v.g.classList.toggle('dim', !matchFilters(v.p)); }
+  VGc.classList.toggle('dim', !vgMarks.some(v => matchFilters(v.p)));
   placeLabels();
 }
 
@@ -192,7 +192,14 @@ function placeLabels() {
     boxes.push({ x0: x - hw, y0: y - hh, x1: x + hw, y1: y + hh + (vgCompact() ? 14 : 0) });
   }
   for (const m of marks) if (m.on) boxes.push({ x0: m.x - 6, y0: m.y - 6, x1: m.x + 6, y1: m.y + 6 });
-  const rank = m => (m.p.id === S.sel && !m.stop ? -1 : (m.stop ? 50 : RANK.indexOf(m.p.id)));
+  // The open place always wins; castle stops come last. A place missing from RANK sorts after the
+  // ranked ones instead of ahead of them (indexOf would return -1 and beat every listed place).
+  const rank = m => {
+    if (m.p.id === S.sel && !m.stop) return -1;
+    if (m.stop) return 50;
+    const i = RANK.indexOf(m.p.id);
+    return i === -1 ? 49 : i;
+  };
   const order = marks.slice().sort((a, b) => rank(a) - rank(b));
   const CANDIDATES = [[11, 4.5, 'start'], [-11, 4.5, 'end'], [0, -12, 'middle'], [0, 20, 'middle'], [9, -8, 'start'], [-9, -8, 'end'], [9, 15, 'start'], [-9, 15, 'end']];
   for (const m of order) {

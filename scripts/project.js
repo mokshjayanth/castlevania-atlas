@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import * as d3 from 'd3-geo';
 import * as topo from 'topojson-client';
 import { makeProjection, params } from './projection.js';
-import { places, unmapped } from '../data/places.js';
+import { places, unmapped, labelRank } from '../data/places.js';
 import { routes, voyages } from '../data/routes.js';
 import { titles } from '../data/episodes.js';
 import { links } from '../data/links.js';
@@ -174,6 +174,16 @@ out.world = {
 };
 out.unmapped = unmapped;
 out.titles = titles;
+out.labelRank = labelRank;
+
+// Label priority is a hand-kept list; warn rather than silently demote a new place.
+{
+  const mappable = places.filter(p => p.view === 'main' && p.tier !== 'unplaced').map(p => p.id);
+  const missing = mappable.filter(id => !labelRank.includes(id));
+  const stale = labelRank.filter(id => !mappable.includes(id));
+  if (missing.length) console.warn(`  note: not in labelRank (data/places.js), so their labels yield to the listed places: ${missing.join(', ')}`);
+  if (stale.length) console.warn(`  note: labelRank lists places that are not on the main map: ${stale.join(', ')}`);
+}
 out.links = links;
 out.world.voyages = voyages.map(v => {
   // great-circle path, projected

@@ -359,3 +359,11 @@ export const unmapped = [
   { name: 'The Duat', series: 'noc', text: 'The Egyptian spirit world Annette enters to duel Ammit (Nocturne S2E6).' },
   { name: 'Russia', series: 'noc', text: 'Where Tera fled Erzsebet in her youth (Nocturne S1E2). No place is named.' },
 ];
+
+// Label priority when markers compete for space on the map, most important first.
+// Places missing from this list keep their labels but yield to every listed one
+// (see scripts/project.js, which warns when a mappable place is absent).
+export const labelRank = [
+  'targoviste', 'gresit', 'braila', 'styria', 'lindenfeld', 'machecoul', 'paris', 'tunis', 'genoa', 'magician',
+  'desert', 'egypt', 'arges', 'severin', 'chilia', 'enisala', 'rhodes', 'whitby', 'london', 'cachtice',
+];
