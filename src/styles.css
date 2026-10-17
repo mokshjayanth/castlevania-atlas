@@ -300,6 +300,20 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .story-cta:hover { border-color: var(--ink-3); border-left-color: var(--cv); }
 .story-cta b { font-family: var(--font-sc); letter-spacing: .05em; font-weight: 700; }
 .story-cta span { color: var(--ink-3); font-size: .88rem; font-style: italic; }
+/* gazetteer search */
+.find-row { position: relative; margin: 0 0 10px; }
+.find-row input { width: 100%; box-sizing: border-box; font-family: var(--font-body); font-size: .97rem;
+  color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 2px;
+  padding: 7px 28px 7px 10px; -webkit-appearance: none; appearance: none; }
+.find-row input::placeholder { color: var(--ink-3); opacity: 1; }
+.find-row input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.find-row input::-webkit-search-decoration, .find-row input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.find-row button { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 22px; height: 22px;
+  display: grid; place-items: center; font-size: 1.05rem; line-height: 1; color: var(--ink-3);
+  background: none; border: 0; cursor: pointer; border-radius: 2px; }
+.find-row button:hover { color: var(--ink); }
+.find-note { margin: -4px 0 14px; font-size: .88rem; color: var(--ink-2); }
+
 .who-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 18px; }
 .who-row label { font-family: var(--font-sc); font-size: .84rem; color: var(--ink-3); letter-spacing: .05em; }
 .who-row select { font-family: var(--font-body); font-size: .97rem; color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); padding: 5px 8px; border-radius: 2px; max-width: 100%; min-width: 0; }

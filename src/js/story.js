@@ -38,7 +38,7 @@ const box = $('#story'), plate = $('#plate'), btn = $('#story-btn');
 export function storyOpen(i = 0) {
   STEPS = storySteps();
   if (!STEPS.length) return;
-  S.who = '';
+  S.who = ''; S.q = '';
   plate.classList.add('storying');
   box.hidden = false;
   btn.setAttribute('aria-pressed', 'true'); btn.textContent = '■ Story';

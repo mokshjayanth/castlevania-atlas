@@ -1,5 +1,5 @@
 // The side panel: the place index, the character filter and each place's card.
-import { G, S, $, esc, byId, ERA, TIER, shown, matchWho, seasonsText } from './core.js';
+import { G, S, $, esc, byId, ERA, TIER, shown, matchWho, matchQ, searchText, seasonsText } from './core.js';
 import { epTitle } from './episodes.js';
 import { itemGlyph } from './glyphs.js';
 import { render, scr, focusPlace, fitPlaces } from './view.js';
@@ -49,10 +49,27 @@ function whoOptions() {
 
 const listItem = (p, meta) => `<li><button type="button" data-id="${p.id}">${itemGlyph(p)}<span class="nm${p.tier === 'exact' ? '' : ' fict'}">${esc(p.name)}</span><span class="meta">${meta}</span></button></li>`;
 
+// set when typing drove the re-render, so renderIndex can put the caret back in the search box
+let refocusFind = false;
+
+/** filter the index and the map by free text ('' clears it) */
+export function setQuery(v, typing) {
+  if (v === S.q) return;
+  S.q = v;
+  refocusFind = !!typing;
+  if (S.sel && v && !matchQ(byId[S.sel])) { S.sel = null; S.hl = []; }
+  if (S.sel) renderDetail(byId[S.sel]); else renderIndex();
+  render();
+}
+
 export function renderIndex() {
   const groups = [['cv', 'Castlevania', 'Wallachia & beyond, 1455–1476'], ['noc', 'Nocturne', 'France & beyond, 1783–1793']];
+  const q = S.q.trim().toLowerCase();
+  const hits = q ? G.places.filter(p => searchText(p).includes(q)).length : 0;
   let h = `<h2>Gazetteer</h2><p class="lede">${G.places.length} places from four seasons of <i>Castlevania</i> and two of <i>Nocturne</i>. Choose one to read what happens there and how its position was worked out.</p>
     <button type="button" class="story-cta" id="story-cta"><b>▶ Follow the story</b><span>${storySteps().length} scenes in episode order</span></button>
+    <div class="find-row"><input type="search" id="find" placeholder="Search places, people, events" aria-label="Search places, people and events" value="${esc(S.q)}" autocomplete="off" spellcheck="false">${q ? `<button type="button" id="find-clear" aria-label="Clear search">×</button>` : ''}</div>
+    ${q ? `<p class="find-note" role="status">${hits || 'No'} ${hits === 1 ? 'place matches' : 'places match'} “${esc(S.q.trim())}”.</p>` : ''}
     <div class="who-row"><label for="who">Follow a character</label><select id="who">${whoOptions()}</select></div>`;
   if (S.who) {
     const n = G.places.filter(p => matchWho(p) && shown(p)).length;
@@ -60,15 +77,16 @@ export function renderIndex() {
   }
   for (const [s, name, sub] of groups) {
     if (S.series !== 'all' && S.series !== s) continue;
-    const ps = G.places.filter(p => p.series === s && p.view === 'main' && matchWho(p));
+    const ps = G.places.filter(p => p.series === s && p.view === 'main' && matchWho(p) && matchQ(p));
     if (!ps.length) continue;
     h += `<section class="group"><div class="group-h"><h3 class="${s}">${name}</h3><span>${sub}</span></div><ul class="items">${ps.map(p => listItem(p, seasonsText(p))).join('')}</ul></section>`;
   }
-  const far = G.places.filter(p => p.view === 'world' && shown(p) && matchWho(p));
+  const far = G.places.filter(p => p.view === 'world' && shown(p) && matchWho(p) && matchQ(p));
   if (far.length || !S.who) {
     h += `<section class="group"><div class="group-h"><h3>Beyond the map edge</h3><span>backstories</span></div>${worldCard(null)}<ul class="items">${far.map(p => listItem(p, `${p.series === 'cv' ? 'CV' : 'Noc'} ${seasonsText(p)}`)).join('')}</ul></section>`;
   }
-  const um = S.who ? [] : G.unmapped.filter(u => shown(u));
+  const uq = S.q.trim().toLowerCase();
+  const um = S.who ? [] : G.unmapped.filter(u => shown(u) && (!uq || `${u.name} ${u.text}`.toLowerCase().includes(uq)));
   if (um.length) h += `<section class="group"><div class="group-h"><h3>Named, never placed</h3><span>no geography given</span></div><ul class="unm">${um.map(u => `<li><b>${esc(u.name)}</b> — ${esc(u.text)}</li>`).join('')}</ul></section>`;
   h += `<div class="method"><p><b>How positions were set.</b> Real towns sit at their real coordinates. Invented places are placed only from what characters say on screen (distances, neighbours, travel times), and the dashed ring shows how far that evidence reaches. Where the show gives nothing, the place is boxed rather than guessed.</p>
     <p><b>Pictures.</b> Stills from the series belong to Netflix and are not copied here; each place links to its stills on the fan wiki, and real places link to period art and photographs on Wikimedia Commons.</p>
@@ -82,6 +100,18 @@ export function renderIndex() {
   $('#who').addEventListener('change', e => setWho(e.target.value));
   const wc = $('#who-clear');
   if (wc) wc.addEventListener('click', () => setWho(''));
+  const find = $('#find');
+  // re-rendering replaces the input, so restore focus and caret when the search drove the render
+  find.addEventListener('input', e => setQuery(e.target.value, true));
+  find.addEventListener('keydown', e => { if (e.key === 'Escape' && S.q) { e.stopPropagation(); setQuery('', true); } });
+  if (refocusFind) {
+    find.focus();
+    const n = find.value.length;
+    try { find.setSelectionRange(n, n); } catch (e) { /* type=search in old Safari */ }
+    refocusFind = false;
+  }
+  const fc = $('#find-clear');
+  if (fc) fc.addEventListener('click', () => setQuery('', false));
   wireWorld();
 }
 
@@ -133,6 +163,7 @@ export function select(id, fly) {
   if (!p) return;
   if (!shown(p)) setSeries('all', true);
   if (!matchWho(p)) S.who = '';
+  if (!matchQ(p)) S.q = '';
   S.sel = id; S.hl = [];
   renderDetail(p); render();
   if (fly || p.view === 'main') {

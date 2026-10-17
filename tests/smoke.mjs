@@ -67,6 +67,24 @@ try {
     check((await page.locator('.items .nm').count()) === 6, 'character filter: Alucard appears at 6 places');
     await page.click('#who-clear');
 
+    // search: by name, by prose/character, and clearing
+    await page.fill('#find', 'paris'); await page.waitForTimeout(250);
+    const byName = await page.locator('.items .nm').allInnerTexts();
+    check(byName.includes('Paris'), 'search by name finds Paris');
+    check(byName.length < 10, `search narrows the index to ${byName.length} entries`);
+    await page.fill('#find', 'olrox'); await page.waitForTimeout(250);
+    check((await page.locator('.items .nm').count()) > 0, 'search matches a character, not just names');
+    await page.fill('#find', 'zzzznope'); await page.waitForTimeout(250);
+    check((await page.locator('.items .nm').count()) === 0, 'search with no matches lists nothing');
+    check(/No places match/i.test(await page.innerText('.find-note')), 'search reports an empty result');
+    // the map must dim alongside the index
+    check(await page.evaluate(() => [...document.querySelectorAll('#map .mk')].some(g => g.classList.contains('dim'))),
+      'search dims non-matching map markers');
+    await page.click('#find-clear'); await page.waitForTimeout(250);
+    check((await page.locator('.items .nm').count()) > 10, 'clearing the search restores the index');
+    check(await page.evaluate(() => ![...document.querySelectorAll('#map .mk')].some(g => g.classList.contains('dim'))),
+      'clearing the search undims the map');
+
     const before = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
     await page.click('#t-theme');
     const after = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
