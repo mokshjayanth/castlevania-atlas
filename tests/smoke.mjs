@@ -31,7 +31,8 @@ const installed = () => {
     || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Caches', 'ms-playwright')
       : path.join(process.env.HOME || '', '.cache', 'ms-playwright'));
   if (!fs.existsSync(base)) return [];
-  return fs.readdirSync(base).filter(d => d.startsWith('chromium-')).sort().reverse().flatMap(d => [
+  const rev = d => +(/^chromium-(\d+)$/.exec(d) || [])[1] || 0;
+  return fs.readdirSync(base).filter(d => rev(d)).sort((a, b) => rev(b) - rev(a)).flatMap(d => [
     path.join(base, d, 'chrome-mac-arm64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
     path.join(base, d, 'chrome-mac', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
     path.join(base, d, 'chrome-linux', 'chrome'),
