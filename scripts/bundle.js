@@ -137,7 +137,11 @@ ${sectionsHtml('h2')}
 `);
 
 // ── single self-contained page (the Claude artifact host supplies the document shell)
-const single = `${head}
+// The charset must come first and stay within the first 1024 bytes: the artifact host supplies a
+// document shell, but opened on its own (file://, or a host that sends no charset) the page would
+// otherwise be decoded as Latin-1 and every en dash and diacritic would mojibake.
+const single = `<meta charset="utf-8">
+${head}
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

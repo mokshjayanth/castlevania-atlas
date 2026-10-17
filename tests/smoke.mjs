@@ -167,6 +167,23 @@ try {
     check(!(await page.content()).includes('disclaimer.html'), 'single-file page has no link to a missing page');
     check(errs.length === 0, `no script errors in the single-file page${errs.length ? `: ${errs[0]}` : ''}`);
     await page.close();
+
+    // Served bare, with no charset from a host shell or HTTP header: the page must declare its own,
+    // or the browser decodes it as Latin-1 and every en dash and diacritic mojibakes.
+    const bare = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(html); });
+    await new Promise(r => bare.listen(0, r));
+    const raw = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await raw.goto(`http://127.0.0.1:${bare.address().port}/`);
+    await raw.waitForTimeout(900);
+    const tagline = await raw.innerText('.brand p');
+    check(tagline.includes('1455–1793'), `single-file page is UTF-8 without a host charset: "${tagline.slice(-12)}"`);
+    // Mojibake signatures, not bare accented letters: "Târgoviște" is correct Romanian, while
+    // "Ã¢" or "â€“" means UTF-8 bytes were decoded one at a time as Latin-1.
+    const gaz = await raw.innerText('.gaz');
+    check(!/Ã.|â€|Â./.test(gaz), 'single-file page: no mojibake in the gazetteer');
+    check(gaz.includes('Târgoviște'), 'single-file page: Romanian diacritics survive');
+    await raw.close();
+    bare.close();
   }
 } finally {
   await browser.close();
