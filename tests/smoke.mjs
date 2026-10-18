@@ -60,10 +60,21 @@ try {
     await page.goto(URL_); await page.waitForTimeout(1200);
     check((await page.locator('#spoiler[open]').count()) === 1, 'first visit shows the spoiler notice');
     check(await page.evaluate(() => document.activeElement && document.activeElement.id === 'sp-ok'), 'spoiler notice takes focus');
+    // Nocturne S2E5 is not cited by any place, so the notice must not claim every episode
+    check(!/every episode|all \d+ episodes/i.test(await page.innerText('#spoiler')), 'the notice makes no every-episode claim');
     await enter(page);
     check((await page.locator('#spoiler').count()) === 0, 'accepting the notice dismisses it');
     await page.reload(); await page.waitForTimeout(1200);
     check((await page.locator('#spoiler').count()) === 0, 'the notice is not shown again');
+    // the map opens on both series, Castlevania first, and merely visiting stores no preference
+    check((await page.getAttribute('#s-all', 'aria-pressed')) === 'true', 'a fresh visit shows both series');
+    check((await page.innerText('.gaz .group-h h3')) === 'Castlevania', 'Castlevania is listed first');
+    check(await page.evaluate(() => localStorage.getItem('cva-series') === null), 'visiting stores no series preference');
+    // an explicit choice persists, and is reversible
+    await page.click('#s-noc'); await page.waitForTimeout(900);
+    check(await page.evaluate(() => localStorage.getItem('cva-series') === 'noc'), 'choosing a series is remembered');
+    await page.click('#s-all'); await page.waitForTimeout(900);
+    check((await page.innerText('.gaz .group-h h3')) === 'Castlevania', 'returning to All restores Castlevania first');
     check((await page.locator('#map .mk').count()) > 20, 'map markers are drawn');
     check((await page.locator('#map .relief').getAttribute('href')) === 'relief.jpg', 'relief image is referenced');
 

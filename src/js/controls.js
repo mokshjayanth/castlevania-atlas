@@ -6,11 +6,12 @@ import { storyClose } from './story.js';
 
 const legendBtn = $('#legend-btn'), legend = $('#legend');
 
-/** show one series ('cv', 'noc') or both ('all'); quiet skips re-rendering the side panel */
+/** show one series ('cv', 'noc') or both ('all'); quiet skips re-rendering the side panel
+ *  and marks this as a restore rather than a choice, so the startup call stores nothing */
 export function setSeries(s, quiet) {
   S.series = s;
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.series === s ? 'true' : 'false'));
-  try { localStorage.setItem('cva-series', s); } catch (e) { /* storage unavailable */ }
+  if (!quiet) { try { localStorage.setItem('cva-series', s); } catch (e) { /* storage unavailable */ } }
   if (S.sel && !shown(byId[S.sel])) S.sel = null;
   if (!quiet) { if (S.sel) renderDetail(byId[S.sel]); else renderIndex(); }
   render();
