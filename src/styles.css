@@ -192,7 +192,10 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .scale rect.a { fill: var(--ink-2); } .scale rect.b { fill: var(--panel); stroke: var(--ink-2); stroke-width: 1; }
 .scale text { font-family: var(--font-sc); font-size: 10.5px; fill: var(--ink-2); }
 .legend-btn { right: 54px; bottom: 10px; }
-.legend { position: absolute; right: 54px; bottom: 46px; z-index: 3; width: 248px; background: var(--panel); border: 1px solid var(--rule); padding: 12px 14px; font-size: 0.86rem; color: var(--ink-2); display: grid; gap: 7px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+/* The key grows upward from its button. On a short plate it would outgrow the plate and be clipped
+   at the top (the plate is overflow:hidden), silently swallowing its first rows — so cap it to the
+   space above the button and let it scroll instead. */
+.legend { position: absolute; right: 54px; bottom: 46px; z-index: 3; width: 248px; background: var(--panel); border: 1px solid var(--rule); padding: 12px 14px; font-size: 0.86rem; color: var(--ink-2); display: grid; gap: 7px; box-shadow: 0 6px 24px rgba(0,0,0,.25); max-height: calc(100% - 56px); overflow-y: auto; overscroll-behavior: contain; }
 .legend[hidden] { display: none; }
 .legend h3 { margin: 4px 0 0; font-family: var(--font-sc); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 500; }
 .legend h3:first-child { margin-top: 0; }

@@ -207,6 +207,20 @@ try {
     await page.click('[data-view="wallachia"]'); await page.waitForTimeout(1300);
     await tap(page, '#map .mk[aria-label^="Brăila:"]', true); await page.waitForTimeout(800);
     check((await page.innerText('.gaz h2.d-name')) === 'Brăila', 'phone: tapping a marker opens its card');
+    // The key grows upward from its button; on a short plate it must cap and scroll rather than
+    // being clipped by the plate's overflow:hidden, which silently ate its first rows.
+    await page.tap('#legend-btn'); await page.waitForTimeout(400);
+    const key = await page.evaluate(() => {
+      const plate = document.querySelector('.plate').getBoundingClientRect();
+      const leg = document.querySelector('#legend'), lr = leg.getBoundingClientRect();
+      const h3 = leg.querySelector('h3');
+      return { cutTop: lr.top < plate.top - 0.5, cutBottom: lr.bottom > plate.bottom + 0.5,
+        firstHeading: h3.textContent, firstVisible: h3.getBoundingClientRect().top >= plate.top - 0.5 };
+    });
+    check(!key.cutTop && !key.cutBottom, 'phone: the key stays inside the map plate');
+    check(key.firstHeading === 'Series' && key.firstVisible, 'phone: the key shows its first row');
+    await page.tap('#legend-btn'); await page.waitForTimeout(300);
+
     await tap(page, '#story-btn', true); await page.waitForTimeout(400);
     await tap(page, '#st-next', true); await page.waitForTimeout(400);
     check((await page.innerText('#st-n')).startsWith('2 /'), 'phone: story next button works');
