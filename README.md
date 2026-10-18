@@ -20,9 +20,12 @@ who is involved, the real history behind it, and how its position was worked out
   "Olrox" finds a place as readily as "Paris". The map dims what does not match.
 - **Follow a character**: fades out every place a character never visits, across both series.
 - **Journeys**: Isaac's road to Styria, Carmilla's 800-mile march, the castle's jumps, Machecoul to Paris,
-  and the Atlantic crossings on the world inset.
+  and the Atlantic crossings on the world inset. Off by default; the Journeys button draws them.
 - **Distance checks**: the show's stated distances compared with real ones.
-- Light and dark themes, period political labels for 1476 and 1792, miles-and-km scale bar, deep links (`#paris`, `#story`).
+- A one-time spoiler notice, since each place says what happens there episode by episode.
+- Themes follow the system by default; the toggle cycles Auto → Light → Dark → Auto, so "follow the system"
+  stays reachable. Period political labels for 1476 and 1792, miles-and-km scale bar, deep links
+  (`#paris`, `#story`).
 
 ## Layout
 
@@ -54,7 +57,8 @@ src/
     gazetteer.js      side panel: index, character filter, place cards
     story.js          story mode
     controls.js       series filter, journeys toggle, key
-    theme.js          light/dark toggle
+    theme.js          auto/light/dark toggle
+    spoiler.js        the one-time spoiler notice
     episodes.js, glyphs.js, scalebar.js
 tests/smoke.mjs       browser checks on the built output
 .github/workflows/    ci.yml: build and test pull requests

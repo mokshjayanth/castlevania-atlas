@@ -25,6 +25,8 @@ export function initControls() {
     if (b.dataset.series === 'noc') fitLL(-4.5, 44.0, 6.0, 51.0);
     else if (b.dataset.series === 'cv') fitLL(...VIEWS.wallachia);
   }));
-  $('#t-routes').addEventListener('click', e => { S.routes = !S.routes; e.currentTarget.setAttribute('aria-pressed', S.routes); render(); });
+  const routesBtn = $('#t-routes');
+  routesBtn.setAttribute('aria-pressed', S.routes);  // keep the button honest about the default
+  routesBtn.addEventListener('click', e => { S.routes = !S.routes; e.currentTarget.setAttribute('aria-pressed', S.routes); render(); });
   legendBtn.addEventListener('click', () => { legend.hidden = !legend.hidden; legendBtn.setAttribute('aria-expanded', !legend.hidden); });
 }

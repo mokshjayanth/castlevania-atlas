@@ -276,6 +276,7 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .tog.icon { padding: 6px 8px; }
 .tog.icon svg { display: block; overflow: visible; }
 .ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ic-f { fill: currentColor; stroke: none; }  /* filled half of the auto-theme icon */
 .chip.storychip { background: var(--cv); border-color: var(--cv); color: var(--bg); font-weight: 700; }
 .chip.storychip:hover { color: var(--bg); filter: brightness(1.08); }
 .chip.storychip[aria-pressed="true"] { background: var(--panel); color: var(--cv); }
@@ -300,6 +301,26 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .story-cta:hover { border-color: var(--ink-3); border-left-color: var(--cv); }
 .story-cta b { font-family: var(--font-sc); letter-spacing: .05em; font-weight: 700; }
 .story-cta span { color: var(--ink-3); font-size: .88rem; font-style: italic; }
+/* spoiler notice: shown once, then remembered. Styled as a plate like the rest of the map chrome. */
+.spoiler { width: min(30rem, calc(100vw - 32px)); padding: 0; border: 1px solid var(--rule);
+  outline: 1px solid var(--rule); outline-offset: 3px; background: var(--panel); color: var(--ink);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, .42); }
+.spoiler::backdrop { background: rgba(8, 6, 5, .72); backdrop-filter: blur(2px); }
+.spoiler > * { margin: 0; padding: 0 22px; }
+.spoiler h2 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--cv); padding-top: 22px; padding-bottom: 10px; }
+.spoiler p { color: var(--ink-2); line-height: 1.5; padding-bottom: 10px; }
+.spoiler .sp-note { color: var(--ink-3); font-style: italic; font-size: .92rem; }
+.spoiler form { padding: 6px 22px 22px; display: flex; justify-content: flex-end; }
+.spoiler button { font-family: var(--font-sc); font-size: .86rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule);
+  border-left: 3px solid var(--cv); padding: 9px 16px; cursor: pointer; }
+.spoiler button:hover { border-color: var(--ink-3); border-left-color: var(--cv); }
+@media (prefers-reduced-motion: no-preference) {
+  .spoiler[open] { animation: sp-in .22s ease-out; }
+  @keyframes sp-in { from { opacity: 0; transform: translateY(6px); } }
+}
+
 /* gazetteer search */
 .find-row { position: relative; margin: 0 0 10px; }
 .find-row input { width: 100%; box-sizing: border-box; font-family: var(--font-body); font-size: .97rem;

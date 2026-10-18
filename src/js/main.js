@@ -7,6 +7,7 @@ import { initControls, setSeries } from './controls.js';
 import { initStory, storyOpen } from './story.js';
 import { initTheme } from './theme.js';
 import { renderIndex, select } from './gazetteer.js';
+import { initSpoiler } from './spoiler.js';
 
 buildBasemap();
 buildOverlay();
@@ -24,6 +25,9 @@ draw();
 const hash = (location.hash || '').slice(1);
 if (hash && byId[hash]) select(hash, true);
 else if (hash === 'story') storyOpen(0);
+
+// last, so the map behind the notice is already drawn and any deep link has resolved
+initSpoiler();
 
 watchResize();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { resetTextMetrics(); render(); });

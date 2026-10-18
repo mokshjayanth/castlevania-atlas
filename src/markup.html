@@ -1,3 +1,14 @@
+<dialog class="spoiler" id="spoiler" aria-labelledby="sp-h">
+  <h2 id="sp-h">Spoilers ahead</h2>
+  <p>This atlas maps where every scene happens, so each place lists what befalls it episode by
+  episode &mdash; across all four seasons of <i>Castlevania</i> and both of <i>Nocturne</i>. Deaths,
+  betrayals and endings are described plainly.</p>
+  <p class="sp-note">If you are still watching, you may prefer to come back later.</p>
+  <form method="dialog">
+    <button value="ok" id="sp-ok" autofocus>Enter the atlas</button>
+  </form>
+</dialog>
+
 <div class="app">
   <header class="head">
     <div class="brand">
@@ -10,7 +21,7 @@
         <button type="button" id="s-cv" data-series="cv" aria-pressed="false"><span class="sw" style="background:var(--cv)"></span>Castlevania<span class="yr"> · 1476</span></button>
         <button type="button" id="s-noc" data-series="noc" aria-pressed="false"><span class="sw" style="background:var(--noc)"></span>Nocturne<span class="yr"> · 1792</span></button>
       </div>
-      <button type="button" class="tog" id="t-routes" aria-pressed="true" aria-label="Show journeys"><span class="box"></span><span class="tl">Journeys</span></button>
+      <button type="button" class="tog" id="t-routes" aria-pressed="false" aria-label="Show journeys"><span class="box"></span><span class="tl">Journeys</span></button>
       <button type="button" class="tog icon" id="t-theme" aria-label="Switch theme"><svg id="theme-ic" width="18" height="18" viewBox="-9 -9 18 18" aria-hidden="true"></svg></button>
     </div>
   </header>

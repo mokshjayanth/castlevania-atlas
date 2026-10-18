@@ -49,6 +49,8 @@ const tap = async (page, selector, touch) => {
   if (touch) await page.touchscreen.tap(x, y); else await page.mouse.click(x, y);
 };
 const watch = page => { const errs = []; page.on('pageerror', e => errs.push(String(e))); return errs; };
+// the spoiler notice opens over a fresh visit; accept it so the map underneath can be driven
+const enter = async page => { const b = page.locator('#sp-ok'); if (await b.count()) { await b.click(); await page.waitForTimeout(250); } };
 
 try {
   // ── desktop
@@ -56,6 +58,12 @@ try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     const errs = watch(page);
     await page.goto(URL_); await page.waitForTimeout(1200);
+    check((await page.locator('#spoiler[open]').count()) === 1, 'first visit shows the spoiler notice');
+    check(await page.evaluate(() => document.activeElement && document.activeElement.id === 'sp-ok'), 'spoiler notice takes focus');
+    await enter(page);
+    check((await page.locator('#spoiler').count()) === 0, 'accepting the notice dismisses it');
+    await page.reload(); await page.waitForTimeout(1200);
+    check((await page.locator('#spoiler').count()) === 0, 'the notice is not shown again');
     check((await page.locator('#map .mk').count()) > 20, 'map markers are drawn');
     check((await page.locator('#map .relief').getAttribute('href')) === 'relief.jpg', 'relief image is referenced');
 
@@ -86,10 +94,23 @@ try {
     check(await page.evaluate(() => ![...document.querySelectorAll('#map .mk')].some(g => g.classList.contains('dim'))),
       'clearing the search undims the map');
 
-    const before = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    await page.click('#t-theme');
-    const after = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    check(after && after !== before, `theme toggle switches to ${after}`);
+    // journeys stay off until asked for, then all four appear
+    check((await page.getAttribute('#t-routes', 'aria-pressed')) === 'false', 'journeys are off by default');
+    check(await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].every(g => g.classList.contains('era-hide'))),
+      'no journey is drawn before the toggle');
+    await page.click('#t-routes'); await page.waitForTimeout(300);
+    const drawn = await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].filter(g => !g.classList.contains('era-hide')).map(g => g.dataset.route));
+    check(drawn.length === 4, `the toggle draws all journeys: ${drawn.join(', ')}`);
+    await page.click('#t-routes'); await page.waitForTimeout(200);
+
+    // theme cycles Auto -> Light -> Dark -> Auto, so "follow the system" stays reachable
+    const mode = () => page.evaluate(() => document.querySelector('#t-theme').dataset.mode);
+    const cycle = [await mode()];
+    for (let i = 0; i < 3; i++) { await page.click('#t-theme'); await page.waitForTimeout(150); cycle.push(await mode()); }
+    check(cycle.join('>') === 'auto>light>dark>auto', `theme cycles ${cycle.join(' -> ')}`);
+    // back at auto: the override must be gone, or the system preference stays silenced forever
+    check(await page.evaluate(() => !document.documentElement.getAttribute('data-theme') && !localStorage.getItem('cva-theme')),
+      'returning to auto clears the stored override');
 
     // story mode: every step must land with its place visible on the map (far-away places use the inset)
     await page.click('#story-btn'); await page.waitForTimeout(300);
@@ -119,6 +140,7 @@ try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     const errs = watch(page);
     await page.goto(URL_); await page.waitForTimeout(1200);
+    await enter(page);
     await page.locator('.method .disc-link a').scrollIntoViewIfNeeded();
     await page.click('.method .disc-link a');
     await page.waitForLoadState('load');
@@ -136,12 +158,35 @@ try {
     await page.close();
   }
 
+  // ── a fresh visitor with no stored choice follows the system theme, either way
+  {
+    for (const [scheme, want] of [['light', 'rgb(231, 220, 195)'], ['dark', 'rgb(16, 13, 11)']]) {
+      const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 }, colorScheme: scheme });
+      const page = await ctx.newPage();
+      await page.goto(URL_); await page.waitForTimeout(1000);
+      const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      check(bg === want, `system ${scheme}: a fresh visit renders the ${scheme} theme`);
+      check((await page.evaluate(() => document.querySelector('#t-theme').dataset.mode)) === 'auto', `system ${scheme}: the toggle reports auto`);
+      await ctx.close();
+    }
+    // and it keeps following when the system flips mid-visit
+    const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 }, colorScheme: 'dark' });
+    const page = await ctx.newPage();
+    await page.goto(URL_); await page.waitForTimeout(900);
+    const dark = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    await page.emulateMedia({ colorScheme: 'light' }); await page.waitForTimeout(400);
+    const light = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    check(dark !== light, 'the theme follows a system change mid-visit');
+    await ctx.close();
+  }
+
   // ── phone
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
     const page = await ctx.newPage();
     const errs = watch(page);
     await page.goto(URL_); await page.waitForTimeout(1200);
+    await enter(page);
     check(!(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)), 'phone: no horizontal scroll');
     await page.click('[data-view="wallachia"]'); await page.waitForTimeout(1300);
     await tap(page, '#map .mk[aria-label^="Brăila:"]', true); await page.waitForTimeout(800);
