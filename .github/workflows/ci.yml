@@ -1,9 +1,9 @@
-# Build the site and run the browser smoke tests on every push and pull request.
+# Build the site and run the browser smoke tests on pull requests.
+# Pushes to main are covered by the deploy workflow, which runs the same build and tests
+# before publishing, so running both here would only duplicate the work.
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 

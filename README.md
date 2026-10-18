@@ -57,7 +57,8 @@ src/
     theme.js          light/dark toggle
     episodes.js, glyphs.js, scalebar.js
 tests/smoke.mjs       browser checks on the built output
-.github/workflows/    CI: build and run the smoke tests on every push and pull request
+.github/workflows/    ci.yml: build and test pull requests
+                      deploy.yml: build, test and publish to GitHub Pages on every push to main
 ```
 
 ## Build
@@ -97,9 +98,19 @@ project` prints a note for any mappable place that is missing from it.
 
 ## Hosting
 
-The site is plain static files, so any static host works. Build command `npm run build`, output directory
-`dist/site`. GitHub Pages from a private repository needs a paid GitHub plan; Cloudflare Pages and Netlify can
-build from a private repository on their free plans.
+The site deploys itself to GitHub Pages: every push to `main` runs
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which builds the site, runs the smoke
+tests and publishes `dist/site/` only if they pass.
+
+**https://mokshjayanth.github.io/castlevania-atlas/**
+
+Pages is set to "GitHub Actions" as its source (Settings › Pages); no branch holds the built files, so
+`dist/` stays untracked. Deploys can also be triggered by hand from the Actions tab.
+
+The site is plain static files and all of its paths are relative, so it works at a subpath and any other
+static host will serve it too: build command `npm run build`, output directory `dist/site`. GitHub Pages
+from a *private* repository needs a paid GitHub plan; Cloudflare Pages and Netlify can build from a private
+repository on their free plans.
 
 ## Disclaimer
 

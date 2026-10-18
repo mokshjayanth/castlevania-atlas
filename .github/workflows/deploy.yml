@@ -1,0 +1,58 @@
+# Build the static site and publish it to GitHub Pages.
+# Pages must be set to "GitHub Actions" as its source once, under Settings › Pages.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it: a half-published site is worse
+# than a slightly stale one. Queued runs collapse to the newest.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # The smoke tests gate the deploy, so a broken map never reaches the live site.
+      - name: Install Chromium
+        run: npx --yes playwright@$(node -p "require('playwright-core/package.json').version") install --with-deps chromium
+
+      - run: npm run build
+
+      - run: npm test
+
+      - uses: actions/configure-pages@v5
+
+      # dist/site/ is self-contained and uses only relative paths, so it works
+      # unchanged at the project subpath (/castlevania-atlas/).
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
