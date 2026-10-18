@@ -165,6 +165,11 @@ try {
     check(await page.evaluate(() => getComputedStyle(document.body).overflow !== 'hidden'), 'disclaimer page scrolls');
     await page.click('.doc .back'); await page.waitForLoadState('load');
     check((await page.locator('#map').count()) === 1, 'disclaimer page links back to the atlas');
+    // the notices and both licences must actually be served, not just linked
+    for (const f of ['ATTRIBUTION.md', 'LICENSE', 'LICENSE-CONTENT']) {
+      const r = await page.request.get(new URL(f, URL_).href);
+      check(r.ok(), `${f} is served with the site`);
+    }
     check(errs.length === 0, `no script errors on the disclaimer page${errs.length ? `: ${errs[0]}` : ''}`);
     await page.close();
   }

@@ -65,7 +65,8 @@ for (const [pkg, files] of FACES) {
 fs.writeFileSync(path.join(site, 'fonts.css'), fontCss);
 // the OFL asks for the licence to travel with the fonts; the MIT/ISC notices travel with the map data
 for (const [pkg] of FACES) fs.copyFileSync(path.join(path.dirname(require.resolve(`@fontsource/${pkg}/package.json`)), 'LICENSE'), path.join(site, 'fonts', `LICENSE-${pkg}.txt`));
-fs.copyFileSync(r('ATTRIBUTION.md'), path.join(site, 'ATTRIBUTION.md'));
+// the notices travel with the site: ATTRIBUTION links to both licence files, so all three ship
+for (const f of ['ATTRIBUTION.md', 'LICENSE', 'LICENSE-CONTENT']) fs.copyFileSync(r(f), path.join(site, f));
 fs.writeFileSync(path.join(site, 'styles.css'), css);
 fs.writeFileSync(path.join(site, 'app.js'), js);
 fs.writeFileSync(path.join(site, 'relief.jpg'), relief);

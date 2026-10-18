@@ -128,5 +128,19 @@ rather publish an email address.
 
 ## Licence
 
-No licence has been chosen yet, so all rights are reserved by default. Third-party data and fonts keep their
-own licences; see [ATTRIBUTION.md](ATTRIBUTION.md).
+The repository holds two kinds of work, licensed separately.
+
+| What | Licence | Where |
+| --- | --- | --- |
+| The software that draws the map | MIT | [LICENSE](LICENSE) |
+| The written research | CC BY 4.0 | [LICENSE-CONTENT](LICENSE-CONTENT) |
+
+"The software" is `src/`, `scripts/`, `geo/*.js`, `geo/relief.py` and `tests/` — reuse it freely, keeping the
+notice. "The written research" is the prose in `data/`: the place summaries, historical notes, placement
+reasoning and distance checks — reuse it with credit.
+
+Third-party map data and fonts keep their own licences; see [ATTRIBUTION.md](ATTRIBUTION.md).
+
+Neither licence touches *Castlevania* itself. The series, its characters, story and names belong to Konami
+and the respective rights holders; what is licensed here is this project's own code and its own writing
+*about* the series. This is an unofficial fan work.

@@ -1,0 +1,42 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Moksh Jayanth GR
+
+The written research in this repository is licensed under the Creative Commons
+Attribution 4.0 International License. You are free to share and adapt it for
+any purpose, including commercially, provided you give appropriate credit, link
+to the licence, and indicate if changes were made.
+
+Full licence text: https://creativecommons.org/licenses/by/4.0/legalcode
+Summary:           https://creativecommons.org/licenses/by/4.0/
+
+WHAT THIS COVERS
+
+The original writing in data/, namely:
+
+  - the place summaries, and the "In the real world" historical notes
+  - the placement reasoning: how each position was worked out from on-screen
+    evidence, and the distance checks
+  - the episode-by-episode event descriptions written for this project
+  - the "named, never placed" notes
+
+Attribution: "The Castlevania Atlas by Moksh Jayanth GR
+(https://mokshjayanth.github.io/castlevania-atlas/), CC BY 4.0".
+
+WHAT THIS DOES NOT COVER
+
+  - The software that draws the map, which is under the MIT License. See
+    LICENSE.
+
+  - Third-party map data and fonts, which keep their own licences. See
+    ATTRIBUTION.md.
+
+  - The underlying Castlevania material. Place names, characters, plot events
+    and the quoted lines of dialogue belong to Konami and the respective rights
+    holders. What is licensed here is this project's own description, research
+    and reasoning about that material, not the material itself, and no licence
+    from this project could grant rights in it.
+
+    In practical terms: you may reuse how this atlas explains that Gresit sits
+    near Argeș, and the evidence given for it. You gain no rights in Castlevania
+    by doing so.

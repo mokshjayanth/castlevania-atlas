@@ -5,6 +5,10 @@ Netflix, Frederator Studios, Powerhouse Animation or anyone involved in making t
 *Castlevania* is a trademark of Konami. No artwork, stills, logos or audio from the games or the
 series are used; place names, plot facts and a few short quotations of dialogue are cited for reference.
 
+This file lists what the project redistributes and the terms it comes under. The project's own code and
+writing are licensed separately: see [LICENSE](LICENSE) (MIT, the software) and
+[LICENSE-CONTENT](LICENSE-CONTENT) (CC BY 4.0, the research).
+
 ## Map data shipped with the site
 
 ### Natural Earth: coastlines, lakes, rivers, regions
