@@ -210,6 +210,57 @@ try {
     await tap(page, '#story-btn', true); await page.waitForTimeout(400);
     await tap(page, '#st-next', true); await page.waitForTimeout(400);
     check((await page.innerText('#st-n')).startsWith('2 /'), 'phone: story next button works');
+
+    // The map must open overflowing its plate: if it fits inside, clamp() centres it and a
+    // one-finger drag moves nothing, which reads as "panning is broken" on a phone.
+    await page.reload(); await page.waitForTimeout(1400); await enter(page);
+    const fit = await page.evaluate(() => {
+      const r = document.querySelector('#map').getBoundingClientRect();
+      const k = +/scale\(([\d.]+)\)/.exec(document.querySelector('#world').getAttribute('transform'))[1];
+      const bb = document.querySelector('#landd').getBBox();
+      return { x: bb.width * k > r.width, y: bb.height * k > r.height };
+    });
+    check(fit.x && fit.y, `phone: the opening view overflows the plate (x: ${fit.x}, y: ${fit.y})`);
+
+    // one finger pans, and must not zoom
+    const tf = async (dx, dy) => {
+      const st = () => page.evaluate(() => { const m = /translate\(([-\d.]+),([-\d.]+)\) scale\(([\d.]+)\)/.exec(document.querySelector('#world').getAttribute('transform')); return { tx: +m[1], ty: +m[2], k: +m[3] }; });
+      const box = await page.locator('#map').boundingBox();
+      const x = Math.round(box.x + box.width / 2), y = Math.round(box.y + box.height / 2);
+      const a = await st();
+      await page.touchscreen.tap(x, y); // settle
+      const cdp = await ctx.newCDPSession(page);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
+      for (let i = 1; i <= 6; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + dx * i / 6, y: y + dy * i / 6, id: 1 }] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForTimeout(350);
+      const z = await st();
+      await cdp.detach();
+      return { dx: z.tx - a.tx, dy: z.ty - a.ty, dk: +(z.k - a.k).toFixed(6) };
+    };
+    const up = await tf(0, -100);
+    check(Math.abs(up.dy) > 50, `phone: one finger pans vertically (dy ${up.dy.toFixed(0)})`);
+    check(up.dk === 0, 'phone: one finger does not zoom');
+    const side = await tf(-100, 0);
+    check(Math.abs(side.dx) > 50, `phone: one finger pans horizontally (dx ${side.dx.toFixed(0)})`);
+
+    // two fingers spreading apart zoom in, rather than panning
+    {
+      const st = () => page.evaluate(() => +/scale\(([\d.]+)\)/.exec(document.querySelector('#world').getAttribute('transform'))[1]);
+      const box = await page.locator('#map').boundingBox();
+      const x = Math.round(box.x + box.width / 2), y = Math.round(box.y + box.height / 2);
+      const k0 = await st();
+      const cdp = await ctx.newCDPSession(page);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x - 20, y, id: 1 }, { x: x + 20, y, id: 2 }] });
+      for (let i = 1; i <= 6; i++) {
+        const d = 20 + i * 10;
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x - d, y, id: 1 }, { x: x + d, y, id: 2 }] });
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForTimeout(350);
+      await cdp.detach();
+      check((await st()) > k0, `phone: pinching outward zooms in (${k0.toFixed(2)} -> ${(await st()).toFixed(2)})`);
+    }
     check(errs.length === 0, `no script errors on phone${errs.length ? `: ${errs[0]}` : ''}`);
     await ctx.close();
   }

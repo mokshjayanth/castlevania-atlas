@@ -6,12 +6,17 @@ import { drawScale } from './scalebar.js';
 
 const svg = $('#map'), world = $('#world');
 export const kMax = 9;
+// Smallest zoom: the whole map fits. At this zoom the map can be smaller than the viewport, so
+// clamp() centres it and there is nothing to pan — which is correct for "show me everything", but
+// makes a poor opening view on a phone (see startView).
 export const kMin = () => Math.min(S.vw / G.W, S.vh / G.H) * 0.98;
 export const scr = (x, y) => [x * S.k + S.tx, y * S.k + S.ty];
 
 export const VIEWS = {
   wallachia: [21.6, 43.4, 30.6, 46.4], isaac: [6.5, 32.0, 17.5, 48.4], france: [-3.6, 45.6, 4.0, 50.0],
   all: [-11, 25, 39, 59.5], start: [-4.5, 34.8, 37.2, 54.5],
+  // phones: open on the Mediterranean core so the map overflows the screen and can be panned
+  startNarrow: [4.0, 36.5, 30.0, 50.5],
 };
 
 export function size() { const r = svg.getBoundingClientRect(); S.vw = r.width; S.vh = r.height; }
@@ -100,10 +105,12 @@ export function focusPlace(p) {
   flyTo(target(Math.min(z, 3.0), p.x, p.y));
 }
 
-/** initial view: Iberia to the Black Sea */
+/** initial view: Iberia to the Black Sea, or a tighter box on a narrow screen.
+ *  Fitting the full width into a phone leaves the map shorter than the viewport, and clamp() then
+ *  pins it vertically centred — so a one-finger drag has nowhere to go and the map feels dead. */
 export function startView() {
   size();
-  const v = VIEWS.start;
+  const v = S.vw < 560 ? VIEWS.startNarrow : VIEWS.start;
   const pts = [fwd(v[0], v[1]), fwd(v[2], v[3]), fwd(v[0], v[3]), fwd(v[2], v[1]), fwd((v[0] + v[2]) / 2, v[1])];
   const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const k = Math.min(S.vw / (Math.max(...xs) - Math.min(...xs)), S.vh / (Math.max(...ys) - Math.min(...ys)));
