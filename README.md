@@ -116,6 +116,19 @@ static host will serve it too: build command `npm run build`, output directory `
 from a *private* repository needs a paid GitHub plan; Cloudflare Pages and Netlify can build from a private
 repository on their free plans.
 
+## Analytics
+
+The hosted site counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/):
+cookieless, no consent banner, no personal data and no cross-site identifiers. It reports pageviews,
+referrers, country and device type — nothing about what a visitor does on the map.
+
+The token lives in `CF_ANALYTICS_TOKEN` in [scripts/bundle.js](scripts/bundle.js); set it to `''` to build
+the site with no analytics at all. The beacon is added to `dist/site/` only — the single-file page is opened
+offline and from `file://`, so it never carries it.
+
+When a custom domain is added, register the new hostname against the same Cloudflare site: the token does
+not change, and traffic can then be read per hostname or together.
+
 ## Disclaimer
 
 `src/disclaimer.js` holds the notices (unofficial status, trademarks, fair use, accuracy, privacy, a

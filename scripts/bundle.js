@@ -18,6 +18,13 @@ if (!fs.existsSync(r('build/geo.json'))) throw new Error('build/geo.json is miss
 
 const DESCRIPTION = "Unofficial interactive atlas of the locations in Netflix's Castlevania and Castlevania: Nocturne, placed on real geography with episode-by-episode notes and the evidence for each position.";
 const SITE_NAME = 'The Castlevania Atlas';
+// Cloudflare Web Analytics: cookieless, no personal data, no cross-site identifiers. Hosted site
+// only — the single-file page is opened offline and from file://, where a third-party request
+// would be both useless and wrong. Set to '' to ship the site without any analytics.
+const CF_ANALYTICS_TOKEN = '54795d2cc92943c69563af3344b98ded';
+const analytics = CF_ANALYTICS_TOKEN
+  ? `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${CF_ANALYTICS_TOKEN}"}'></script>\n`
+  : '';
 const GOOGLE_FONTS = 'https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@500;700&family=Cinzel:wght@500;600;700&family=IM+Fell+English:ital@0;1&display=swap';
 // faces the stylesheet uses; only the latin and latin-ext subsets are shipped
 const FACES = [
@@ -86,7 +93,7 @@ ${head}
 <body>
 ${markup.replace('__RELIEF__', 'relief.jpg')}
 <script src="app.js"></script>
-</body>
+${analytics}</body>
 </html>
 `);
 
@@ -133,7 +140,7 @@ ${sectionsHtml('h2')}
 <footer>Full licence texts, third-party notices and the list of research sources are in
 <a href="ATTRIBUTION.md">ATTRIBUTION.md</a>.</footer>
 </main>
-</body>
+${analytics}</body>
 </html>
 `);
 

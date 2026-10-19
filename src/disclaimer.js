@@ -24,7 +24,10 @@ export const SECTIONS = [
     'The base map uses Natural Earth data (public domain) and a shaded-relief texture from the basemap-data package (MIT). The world inset uses world-atlas (ISC). The typefaces are licensed under the SIL Open Font License. Full notices, licence texts and research sources are listed in the project\'s attribution file.',
   ]],
   ['Privacy', [
-    'This site sets no cookies, runs no analytics and sends no data to third parties. The hosted version serves its own fonts and makes no third-party requests. Your chosen theme and series filter are remembered in your own browser\'s local storage and are never transmitted anywhere.',
+    'This site sets no cookies and does not identify or track you. It serves its own fonts and makes no third-party requests beyond the one described next.',
+    'The hosted site counts visits using <a href="https://www.cloudflare.com/web-analytics/" target="_blank" rel="noopener">Cloudflare Web Analytics</a>, which is cookieless and uses no fingerprinting or cross-site identifiers. It records that a page was viewed, along with the referring site, country, browser and device type. It does not record who you are, and nothing it collects can be traced back to you or followed across other sites. Nothing you do on the map &mdash; the places you open, what you search for, how you move around &mdash; is sent anywhere.',
+    'Your chosen theme and series filter, and the fact that you have dismissed the spoiler notice, are remembered in your own browser\'s local storage. They are never transmitted anywhere, and clearing your site data removes them.',
+    'The single-file offline version of this atlas contains no analytics at all.',
   ]],
   ['Rights holders', [
     `If you represent a rights holder and believe something here oversteps, please <a href="${CONTACT}" target="_blank" rel="noopener">open an issue on the project repository</a> and it will be addressed promptly.`,

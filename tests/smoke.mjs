@@ -77,6 +77,7 @@ try {
     check((await page.innerText('.gaz .group-h h3')) === 'Castlevania', 'returning to All restores Castlevania first');
     check((await page.locator('#map .mk').count()) > 20, 'map markers are drawn');
     check((await page.locator('#map .relief').getAttribute('href')) === 'relief.jpg', 'relief image is referenced');
+    check((await page.locator('script[data-cf-beacon]').count()) === 1, 'the hosted page carries the analytics beacon');
 
     await page.click('[data-view="france"]'); await page.waitForTimeout(1300);
     await tap(page, '#map .mk[aria-label^="Paris:"]'); await page.waitForTimeout(800);
@@ -163,6 +164,13 @@ try {
     check(heads.some(h => /trademark/i.test(h)), 'disclaimer covers trademarks');
     // the page must be readable with no JS and must not inherit the app's no-scroll shell
     check(await page.evaluate(() => getComputedStyle(document.body).overflow !== 'hidden'), 'disclaimer page scrolls');
+    // analytics ships on the hosted pages, and the privacy section must say so
+    const privacy = await page.evaluate(() => {
+      const h = [...document.querySelectorAll('.doc section')].find(s => /privacy/i.test(s.querySelector('h2').textContent));
+      return h ? h.innerText : '';
+    });
+    check(/analytics/i.test(privacy), 'the disclaimer discloses the analytics');
+    check(!/runs no analytics|no third-party requests\./i.test(privacy), 'the disclaimer no longer claims there are none');
     await page.click('.doc .back'); await page.waitForLoadState('load');
     check((await page.locator('#map').count()) === 1, 'disclaimer page links back to the atlas');
     // the notices and both licences must actually be served, not just linked
@@ -290,6 +298,8 @@ try {
     check((await page.locator('#map .relief').getAttribute('href')).startsWith('data:image/jpeg'), 'single-file page inlines the relief');
     // no second page to link to here, so the notices must travel inside the page
     check((await page.locator('details.disc').count()) === 1, 'single-file page carries the disclaimer inline');
+    // the offline page is opened from file:// and without a network; it must stay self-contained
+    check(!html.includes('cloudflareinsights'), 'single-file page carries no analytics beacon');
     check(!(await page.content()).includes('disclaimer.html'), 'single-file page has no link to a missing page');
     check(errs.length === 0, `no script errors in the single-file page${errs.length ? `: ${errs[0]}` : ''}`);
     await page.close();
