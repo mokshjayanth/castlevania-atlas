@@ -48,6 +48,15 @@ const COMPASS = ['north', 'north-north-east', 'north-east', 'east-north-east', '
 const merc = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
 const imerc = y => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI;
 const greatCircleKm = (a, b) => d3.geoDistance(a, b) * 6371;
+// The compass word on the card goes with the distance beside it, so both describe the great-circle
+// route: the way you would actually travel. (A rhumb bearing would read "east" for Japan, which is
+// 8,600 km to the north-east.) The marker and its arrow still follow the rhumb line, so a place out
+// west sits on the west edge. Bearing is taken a short step along the great circle from `from`.
+function greatCircleBearing(from, to) {
+  const [lon, lat] = d3.geoInterpolate(from, to)(0.001);
+  let dl = (lon - from[0] + 540) % 360 - 180;
+  return (Math.atan2(dl * Math.cos(lat * Math.PI / 180), lat - from[1]) * 180 / Math.PI + 360) % 360;
+}
 function edgeMarker(from, to) {
   let dl = to[0] - from[0];
   if (dl > 180) dl -= 360;
@@ -61,11 +70,10 @@ function edgeMarker(from, to) {
     prev = last; last = q;
   }
   if (inside(proj(to))) throw new Error(`offmap place at ${to} is inside the frame; drop offmap for it`);
-  const bearing = (Math.atan2(dl * Math.PI / 180, y1 - y0) * 180 / Math.PI + 360) % 360;
   return {
     x: +last[0].toFixed(1), y: +last[1].toFixed(1),
     dir: Math.round(Math.atan2(last[1] - prev[1], last[0] - prev[0]) * 180 / Math.PI),
-    compass: COMPASS[Math.round(bearing / 22.5) % 16],
+    compass: COMPASS[Math.round(greatCircleBearing(from, to) / 22.5) % 16],
   };
 }
 const byId = {};
