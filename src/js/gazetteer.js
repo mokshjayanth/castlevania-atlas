@@ -131,7 +131,7 @@ export function renderDetail(p, evi) {
     const title = epTitle(p.series, e);
     return `<li${i === evi ? ' class="now"' : ''}><span class="ep">${esc(e)}${title ? `<i>${esc(title)}</i>` : ''}</span><span>${esc(t)}</span></li>`;
   }).join('');
-  const sites = p.sites ? `<div class="sect"><h4>Sites in the city</h4><ul class="sites">${p.sites.map(([n, c]) => `<li>${esc(n)}<span>${esc(c)}</span></li>`).join('')}</ul></div>` : '';
+  const sites = p.sites ? `<div class="sect"><h4>${esc(p.sitesTitle || 'Sites')}</h4><ul class="sites">${p.sites.map(([n, c]) => `<li>${esc(n)}${c ? `<span>${esc(c)}</span>` : ''}</li>`).join('')}</ul></div>` : '';
   const coord = p.tier !== 'unplaced' && p.lat !== undefined
     ? `<div class="coords">${p.tier === 'exact' ? '' : 'Marker at '}${fmtLL(p.lat, p.lon)}${p.r ? ` · ring ≈ ${p.r} km (${Math.round(p.r / 1.609)} mi)` : ''}</div>` : '';
   const L = (G.links || {})[p.id] || {}, fq = L.fandom || p.name;
