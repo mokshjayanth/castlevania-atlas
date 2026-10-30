@@ -25,7 +25,7 @@ const onActivate = (node, fn) => {
   node.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
 };
 
-// small world map for the places beyond the main map's edge, with the Atlantic crossings
+// small world map, shown in the card of a place beyond the main map's edge, with the Atlantic crossings
 function worldCard(selId) {
   const W = G.world;
   const voyages = (W.voyages || []).filter(v => (S.series === 'all' || v.series === S.series) && !S.who)
@@ -36,7 +36,7 @@ function worldCard(selId) {
     const cls = `wm ${p.series}${selId === p.id ? ' sel' : ''}${shown(p) ? '' : ' era-hide'}${matchWho(p) ? '' : ' dim'}`;
     return `<g class="${cls}" data-id="${p.id}" tabindex="0" role="button" aria-label="${esc(p.name)}" transform="translate(${q.x},${q.y})"><circle class="r" r="7"/><circle class="d" r="3.6"/><text x="${lx}" y="${ly}" text-anchor="${an}">${esc(p.name)}</text></g>`;
   }).join('');
-  return `<figure class="world-card"><svg viewBox="0 0 ${W.W} ${W.H}" role="img" aria-label="World map of places beyond the main map, with the Atlantic crossings"><path class="wg" d="${W.graticule}"/><path class="wl" d="${W.land}"/><path class="wf" d="${W.frame}"/>${voyages}${marks}</svg><figcaption>Dashed frame: the main map. Dotted lines: Richter's crossing in 1783 and Annette's voyages. Tap a point to read about it.</figcaption></figure>`;
+  return `<figure class="world-card"><svg viewBox="0 0 ${W.W} ${W.H}" role="img" aria-label="World map of places beyond the main map, with the Atlantic crossings"><path class="wg" d="${W.graticule}"/><path class="wl" d="${W.land}"/><path class="wf" d="${W.frame}"/>${voyages}${marks}</svg><figcaption>Where the places on the main map's edge really are. Dashed frame: the main map. Dotted lines: Richter's crossing in 1783 and Annette's voyages.</figcaption></figure>`;
 }
 const wireWorld = () => gaz.querySelectorAll('.wm').forEach(g => onActivate(g, () => select(g.dataset.id, false)));
 
@@ -80,10 +80,6 @@ export function renderIndex() {
     const ps = G.places.filter(p => p.series === s && p.view === 'main' && matchWho(p) && matchQ(p));
     if (!ps.length) continue;
     h += `<section class="group"><div class="group-h"><h3 class="${s}">${name}</h3><span>${sub}</span></div><ul class="items">${ps.map(p => listItem(p, seasonsText(p))).join('')}</ul></section>`;
-  }
-  const far = G.places.filter(p => p.view === 'world' && shown(p) && matchWho(p) && matchQ(p));
-  if (far.length || !S.who) {
-    h += `<section class="group"><div class="group-h"><h3>Beyond the map edge</h3><span>backstories</span></div>${worldCard(null)}<ul class="items">${far.map(p => listItem(p, `${p.series === 'cv' ? 'CV' : 'Noc'} ${seasonsText(p)}`)).join('')}</ul></section>`;
   }
   const uq = S.q.trim().toLowerCase();
   const um = S.who ? [] : G.unmapped.filter(u => shown(u) && (!uq || `${u.name} ${u.text}`.toLowerCase().includes(uq)));
@@ -131,7 +127,7 @@ export function renderDetail(p, evi) {
     const title = epTitle(p.series, e);
     return `<li${i === evi ? ' class="now"' : ''}><span class="ep">${esc(e)}${title ? `<i>${esc(title)}</i>` : ''}</span><span>${esc(t)}</span></li>`;
   }).join('');
-  const sites = p.sites ? `<div class="sect"><h4>Sites in the city</h4><ul class="sites">${p.sites.map(([n, c]) => `<li>${esc(n)}<span>${esc(c)}</span></li>`).join('')}</ul></div>` : '';
+  const sites = p.sites ? `<div class="sect"><h4>${esc(p.sitesTitle || 'Sites')}</h4><ul class="sites">${p.sites.map(([n, c]) => `<li>${esc(n)}${c ? `<span>${esc(c)}</span>` : ''}</li>`).join('')}</ul></div>` : '';
   const coord = p.tier !== 'unplaced' && p.lat !== undefined
     ? `<div class="coords">${p.tier === 'exact' ? '' : 'Marker at '}${fmtLL(p.lat, p.lon)}${p.r ? ` · ring ≈ ${p.r} km (${Math.round(p.r / 1.609)} mi)` : ''}</div>` : '';
   const L = (G.links || {})[p.id] || {}, fq = L.fandom || p.name;
@@ -148,11 +144,11 @@ export function renderDetail(p, evi) {
     ${sites}
     <div class="sect"><h4>Characters</h4><p>${p.characters.map(esc).join(', ')}</p></div>
     <div class="sect"><h4>In the real world</h4><p>${esc(p.real)}</p></div>
-    <div class="sect"><h4>How it is placed</h4><p class="place">${esc(p.placement)}</p>${p.check ? `<p class="check"><b>Distance check.</b> ${esc(p.check)}</p>` : ''}${coord}</div>
-    ${p.view === 'world' ? worldCard(p.id) : ''}
+    <div class="sect"><h4>How it is placed</h4><p class="place">${esc(p.placement)}</p>${p.check ? `<p class="check"><b>Distance check.</b> ${esc(p.check)}</p>` : ''}${p.offmap ? `<p class="place">Beyond the main map: about ${p.offmap.km.toLocaleString('en')} km (${(Math.round(p.offmap.km / 1.609344 / 10) * 10).toLocaleString('en')} mi) ${p.offmap.compass} of ${esc(p.offmap.fromName)}. Its marker sits on the map's edge in that direction.</p>` : ''}${coord}</div>
+    ${p.offmap ? worldCard(p.id) : ''}
     <div class="sect"><h4>Pictures and further reading</h4><ul class="links">${links}</ul></div>`;
-  $('#back').addEventListener('click', () => { S.sel = null; S.hl = []; renderIndex(); render(); gaz.scrollTop = 0; });
-  if (p.view === 'world') wireWorld();
+  $('#back').addEventListener('click', () => { S.sel = null; S.hl = []; S.hlRoutes = []; renderIndex(); render(); gaz.scrollTop = 0; });
+  if (p.offmap) wireWorld();
   const now = gaz.querySelector('.ev li.now');
   gaz.scrollTop = now ? Math.max(0, now.offsetTop - gaz.clientHeight * 0.25) : 0;
 }
@@ -164,7 +160,7 @@ export function select(id, fly) {
   if (!shown(p)) setSeries('all', true);
   if (!matchWho(p)) S.who = '';
   if (!matchQ(p)) S.q = '';
-  S.sel = id; S.hl = [];
+  S.sel = id; S.hl = []; S.hlRoutes = p.journeys || [];
   renderDetail(p); render();
   if (fly || p.view === 'main') {
     const onScreen = p.x !== undefined && (() => { const [x, y] = scr(p.x, p.y); return x > 40 && y > 40 && x < S.vw - 40 && y < S.vh - 40; })();

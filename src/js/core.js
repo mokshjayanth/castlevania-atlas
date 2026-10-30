@@ -17,7 +17,7 @@ export const byId = Object.fromEntries(G.places.map(p => [p.id, p]));
 // View and selection state. k/tx/ty: zoom and pan; sel: open place; hl: places lit by story mode;
 // who: character filter; q: gazetteer search text; routes: journeys drawn (off until asked for);
 // story: index of the current story step, or -1 when off.
-export const S = { k: 0.5, tx: 0, ty: 0, series: 'all', routes: false, sel: null, vw: 800, vh: 600, who: '', q: '', hl: [], story: -1 };
+export const S = { k: 0.5, tx: 0, ty: 0, series: 'all', routes: false, sel: null, vw: 800, vh: 600, who: '', q: '', hl: [], hlRoutes: [], story: -1 };
 try { const s = localStorage.getItem('cva-series'); if (s && ['all', 'cv', 'noc'].includes(s)) S.series = s; } catch (e) { /* storage unavailable */ }
 
 // label priority when markers compete for space (kept with the data, in data/places.js)

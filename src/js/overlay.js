@@ -9,7 +9,7 @@ import { select } from './gazetteer.js';
 const R = Math.PI / 180;
 const VW = 196, VH = 104; // vignette box, screen pixels
 const marks = [], routeEls = [];
-let texts = [], cities = [], vigG, VG, VGc, vgMarks = [];
+let texts = [], cities = [], vigG, VG, VGc, vgMarks = [], leader;
 
 export const vgCompact = () => S.k < 0.6;
 
@@ -27,7 +27,8 @@ export function buildOverlay() {
   for (const p of G.places) {
     if (p.view !== 'main' || p.tier === 'unplaced') continue;
     const zone = p.rpx ? el('circle', { class: `zone ${p.series} ${p.tier}` }, zonesG) : null;
-    const g = el('g', { class: `mk ${p.series}`, tabindex: 0, role: 'button', 'aria-label': `${p.name}: ${TIER[p.tier]}` }, marksG);
+    const label = p.offmap ? `${p.name}: off the map to the ${p.offmap.compass}, ${p.offmap.km.toLocaleString('en')} km from ${p.offmap.fromName}` : `${p.name}: ${TIER[p.tier]}`;
+    const g = el('g', { class: `mk ${p.series}${p.offmap ? ' off' : ''}`, tabindex: 0, role: 'button', 'aria-label': label }, marksG);
     el('circle', { r: 13, class: 'hit' }, g);
     el('circle', { r: 6, class: 'pulse' }, g);
     glyph(g, p);
@@ -83,8 +84,8 @@ export function buildOverlay() {
     t.textContent = r.name + (r.note ? ` · ${r.note}` : '');
     routeEls.push({ r, grp, t, at });
   }
-  // leader from the vignette to Wallachia
-  { const a = G.vignette.anchor, b = G.vignette.leaderTo; el('path', { class: 'leader', d: `M${a.x},${a.y} Q${(a.x + b.x) / 2},${Math.min(a.y, b.y) - 60} ${b.x},${b.y}` }, routesG); }
+  // leader from the vignette to Wallachia (Castlevania only)
+  { const a = G.vignette.anchor, b = G.vignette.leaderTo; leader = el('path', { class: 'leader', d: `M${a.x},${a.y} Q${(a.x + b.x) / 2},${Math.min(a.y, b.y) - 60} ${b.x},${b.y}` }, routesG); }
 
   buildVignette();
 }
@@ -156,7 +157,8 @@ export function drawOverlay() {
   }
   for (const c of cities) { const [x, y] = scr(c.c.x, c.c.y); c.x = x; c.y = y; c.g.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`); }
   for (const re of routeEls) {
-    const on = S.routes && (S.series === 'all' || S.series === re.r.series) && (!S.who || (re.r.who || []).includes(S.who));
+    // a selected place's own crossing is drawn even with journeys switched off
+    const on = (S.routes || S.hlRoutes.includes(re.r.id)) && (S.series === 'all' || S.series === re.r.series) && (!S.who || (re.r.who || []).includes(S.who));
     re.grp.classList.toggle('era-hide', !on);
     if (re.at && on && S.k >= 0.9) {
       const [x, y] = scr(re.at.x, re.at.y);
@@ -168,7 +170,10 @@ export function drawOverlay() {
     VG.classList.toggle('era-hide', vgCompact()); VGc.classList.toggle('era-hide', !vgCompact());
     vigG.classList.toggle('era-hide', S.series === 'noc'); }
   for (const v of vgMarks) { v.g.classList.toggle('sel', S.sel === v.p.id || S.hl.includes(v.p.id)); v.g.classList.toggle('dim', !matchFilters(v.p)); }
-  VGc.classList.toggle('dim', !vgMarks.some(v => matchFilters(v.p)));
+  const vgMatch = vgMarks.some(v => matchFilters(v.p));
+  VGc.classList.toggle('dim', !vgMatch);
+  leader.classList.toggle('era-hide', S.series === 'noc');
+  leader.classList.toggle('dim', !vgMatch);
   placeLabels();
 }
 
@@ -214,7 +219,9 @@ function placeLabels() {
       const x = m.x + dx, y = m.y + dy;
       const x0 = an === 'start' ? x : an === 'end' ? x - w : x - w / 2;
       const b = { x0: x0 - 2, x1: x0 + w + 2, y0: y - h + 2, y1: y + 3 };
-      if (sel || !hit(b)) {
+      // labels must stay inside the map; the open place may overlap others but not leave the view
+      const fits = b.x0 > 2 && b.x1 < S.vw - 2 && b.y0 > 2 && b.y1 < S.vh - 2;
+      if (fits && (sel || !hit(b))) {
         boxes.push(b);
         t.setAttribute('x', x.toFixed(1)); t.setAttribute('y', y.toFixed(1)); t.setAttribute('text-anchor', an);
         t.classList.remove('era-hide');

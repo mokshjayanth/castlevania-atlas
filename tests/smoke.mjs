@@ -60,7 +60,7 @@ try {
     await page.goto(URL_); await page.waitForTimeout(1200);
     check((await page.locator('#spoiler[open]').count()) === 1, 'first visit shows the spoiler notice');
     check(await page.evaluate(() => document.activeElement && document.activeElement.id === 'sp-ok'), 'spoiler notice takes focus');
-    // Nocturne S2E5 is not cited by any place, so the notice must not claim every episode
+    // coverage is near-complete but shifts with the data, so the notice must claim no specific extent
     check(!/every episode|all \d+ episodes/i.test(await page.innerText('#spoiler')), 'the notice makes no every-episode claim');
     await enter(page);
     check((await page.locator('#spoiler').count()) === 0, 'accepting the notice dismisses it');
@@ -85,7 +85,7 @@ try {
 
     await page.click('#back');
     await page.selectOption('#who', 'Alucard'); await page.waitForTimeout(1300);
-    check((await page.locator('.items .nm').count()) === 6, 'character filter: Alucard appears at 6 places');
+    check((await page.locator('.items .nm').count()) === 7, 'character filter: Alucard appears at 7 places');
     await page.click('#who-clear');
 
     // search: by name, by prose/character, and clearing
@@ -106,13 +106,14 @@ try {
     check(await page.evaluate(() => ![...document.querySelectorAll('#map .mk')].some(g => g.classList.contains('dim'))),
       'clearing the search undims the map');
 
-    // journeys stay off until asked for, then all four appear
+    // journeys stay off until asked for, then every one appears
     check((await page.getAttribute('#t-routes', 'aria-pressed')) === 'false', 'journeys are off by default');
     check(await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].every(g => g.classList.contains('era-hide'))),
       'no journey is drawn before the toggle');
     await page.click('#t-routes'); await page.waitForTimeout(300);
     const drawn = await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].filter(g => !g.classList.contains('era-hide')).map(g => g.dataset.route));
-    check(drawn.length === 4, `the toggle draws all journeys: ${drawn.join(', ')}`);
+    const allRoutes = await page.locator('#routes [data-route]').count();
+    check(drawn.length === allRoutes && allRoutes >= 6, `the toggle draws all ${allRoutes} journeys: ${drawn.join(', ')}`);
     await page.click('#t-routes'); await page.waitForTimeout(200);
 
     // theme cycles Auto -> Light -> Dark -> Auto, so "follow the system" stays reachable
@@ -202,6 +203,61 @@ try {
     const light = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     check(dark !== light, 'the theme follows a system change mid-visit');
     await ctx.close();
+  }
+
+  // ── Nocturne filter: nothing from Castlevania may stay on the map
+  {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const errs = watch(page);
+    await page.goto(URL_); await page.waitForTimeout(1000);
+    await enter(page);
+    await page.click('#s-noc'); await page.waitForTimeout(1300);
+    // journeys are off by default; turn them on so the check covers the Castlevania routes too
+    if ((await page.getAttribute('#t-routes', 'aria-pressed')) !== 'true') { await page.click('#t-routes'); await page.waitForTimeout(300); }
+    const leaks = await page.evaluate(() => {
+      const visible = e => { for (let n = e; n && n.nodeType === 1; n = n.parentNode) { const cs = getComputedStyle(n); if (cs.display === 'none' || +cs.opacity === 0) return false; } return true; };
+      const out = [];
+      // routes carry their series, so this holds as journeys are added; the leader has no data-series
+      document.querySelectorAll('#routes > *').forEach(e => { if (visible(e) && e.getAttribute('data-series') !== 'noc') out.push(e.getAttribute('data-route') || e.getAttribute('class')); });
+      document.querySelectorAll('#ov-text .tx.story, .realm').forEach(e => { if (visible(e)) out.push(e.textContent || 'realm outline'); });
+      document.querySelectorAll('#ov-marks .mk.cv, #ov-vignette .mk').forEach(e => { if (visible(e)) out.push(e.getAttribute('aria-label')); });
+      return out;
+    });
+    check(leaks.length === 0, `Nocturne mode hides every Castlevania overlay${leaks.length ? `: ${leaks.join(', ')}` : ''}`);
+    check(await page.locator('.views [data-view="wallachia"]').isHidden() && await page.locator('.views [data-view="france"]').isVisible(), 'Nocturne mode shows only the France jump');
+    await page.click('#story-btn'); await page.waitForTimeout(300);
+    const nocSteps = +(await page.innerText('#st-n')).split('/')[1];
+    check(nocSteps >= 25, `Nocturne story has ${nocSteps} scenes`);
+    await page.click('#st-close');
+    await page.click('#back');
+    await page.click('.items button[data-id="machecoul"]'); await page.waitForTimeout(600);
+    check((await page.locator('.sect h4', { hasText: 'Sites in and around the town' }).count()) === 1, 'Machecoul card lists its local sites');
+    // places beyond the frame are on the main map, pinned to its edge, with their crossing drawn
+    await page.click('#back');
+    check((await page.locator('.group-h h3', { hasText: 'Beyond the map edge' }).count()) === 0, 'no separate beyond-the-map section');
+    check((await page.locator('.items button[data-id="boston"]').count()) === 1, 'Boston is listed with the Nocturne places');
+    if ((await page.getAttribute('#t-routes', 'aria-pressed')) === 'true') { await page.click('#t-routes'); await page.waitForTimeout(200); }
+    await page.click('.items button[data-id="boston"]'); await page.waitForTimeout(1500);
+    const edge = await page.evaluate(() => {
+      const box = document.querySelector('#map').getBoundingClientRect();
+      const m = document.querySelector('#map .mk[aria-label^="Boston:"]').getBoundingClientRect();
+      const route = document.querySelector('#routes [data-route="richter1783"]');
+      return { inside: m.left >= box.left && m.right <= box.right && m.top >= box.top && m.bottom <= box.bottom, route: !route.classList.contains('era-hide') };
+    });
+    check(edge.inside, 'Boston\'s edge marker is in view after selecting it');
+    check(edge.route, 'selecting Boston draws Richter\'s crossing with journeys off');
+    check((await page.locator('.gaz .world-card').count()) === 1, 'Boston\'s card shows where it really is');
+    check(/km .* of Machecoul/.test(await page.innerText('.gaz')), 'Boston\'s card gives its distance from Machecoul');
+
+    // selecting a marker with the mouse must not draw the browser's focus box around it
+    await page.click('#back');
+    await page.click('[data-view="france"]'); await page.waitForTimeout(1300);
+    await tap(page, '#map .mk[aria-label^="Paris:"]'); await page.waitForTimeout(400);
+    const ring = await page.evaluate(() => { const a = document.activeElement; return a.classList.contains('mk') ? getComputedStyle(a).outlineStyle : 'not focused'; });
+    check(ring === 'none' || ring === 'not focused', `a clicked marker has no focus box (outline: ${ring})`);
+
+    check(errs.length === 0, `no script errors in Nocturne mode${errs.length ? `: ${errs[0]}` : ''}`);
+    await page.close();
   }
 
   // ── phone

@@ -47,7 +47,7 @@ export function storyOpen(i = 0) {
 }
 
 export function storyClose() {
-  S.story = -1; S.hl = [];
+  S.story = -1; S.hl = []; S.hlRoutes = [];
   box.hidden = true;
   plate.classList.remove('storying');
   btn.setAttribute('aria-pressed', 'false'); btn.textContent = '▶ Story';
@@ -57,6 +57,8 @@ export function storyClose() {
 // move the camera only when the place is not already comfortably in view above the story bar
 function storyFocus(p) {
   if (p.view !== 'main') return;
+  // beyond the frame: show its edge marker together with the place it connects to
+  if (p.offmap) { fitPlaces([p.id, p.offmap.from], S.vh * 0.25); return; }
   let x, y, k;
   if (p.tier === 'unplaced') { x = G.vignette.anchor.x - 30; y = G.vignette.anchor.y; k = 1.35; }
   else { x = p.x; y = p.y; k = p.rpx ? Math.max(0.8, Math.min(2.2, Math.min(S.vw, S.vh) * 0.28 / p.rpx)) : 1.7; }
@@ -84,6 +86,7 @@ export function storyGo(i) {
   $('#st-prev').disabled = i === 0;
   $('#st-next').disabled = i === STEPS.length - 1;
   S.hl = st.ids.slice(); S.sel = p.id;
+  S.hlRoutes = st.ids.flatMap(id => byId[id].journeys || []);
   if (!shown(p)) setSeries('all', true);
   renderDetail(p, st.evs[p.id]);
   if (st.ids.length > 1) fitPlaces(st.ids, S.vh * 0.25); else storyFocus(p);

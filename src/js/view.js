@@ -13,7 +13,7 @@ export const kMin = () => Math.min(S.vw / G.W, S.vh / G.H) * 0.98;
 export const scr = (x, y) => [x * S.k + S.tx, y * S.k + S.ty];
 
 export const VIEWS = {
-  wallachia: [21.6, 43.4, 30.6, 46.4], isaac: [6.5, 32.0, 17.5, 48.4], france: [-3.6, 45.6, 4.0, 50.0],
+  wallachia: [21.6, 43.4, 30.6, 46.4], france: [-3.6, 45.6, 4.0, 50.0],
   all: [-11, 25, 39, 59.5], start: [-4.5, 34.8, 37.2, 54.5],
   // phones: open on the Mediterranean core so the map overflows the screen and can be panned
   startNarrow: [4.0, 36.5, 30.0, 50.5],
@@ -100,6 +100,7 @@ export function fitPlaces(ids, bottomPad = 0) {
 /** bring a place into view at a zoom that suits its uncertainty ring */
 export function focusPlace(p) {
   if (p.view !== 'main') return;
+  if (p.offmap) { fitPlaces([p.id, p.offmap.from]); return; }
   if (p.tier === 'unplaced') { const a = G.vignette.anchor, k = Math.max(S.k, 1.6); flyTo(target(k, a.x - 60 / k, a.y)); return; }
   const z = p.rpx ? Math.max(0.9, (Math.min(S.vw, S.vh) * 0.3) / p.rpx) : Math.max(S.k, 2.4);
   flyTo(target(Math.min(z, 3.0), p.x, p.y));

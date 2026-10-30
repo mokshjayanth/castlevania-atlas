@@ -15,12 +15,16 @@ who is involved, the real history behind it, and how its position was worked out
     the uncertainty (Gresit is "close to Arges"; the Magician's town is "thirty miles up the road" from Genoa).
   - *Region only*: the show names a region, not a place (Isaac's desert, Egypt).
   - *Location unrevealed*: drawn in a labelled box instead of guessed (the castle's final site, the Belmont Hold, Danesti).
-- **Story mode**: steps through all 66 scenes in episode order and flies the map to each one.
+- **Story mode**: steps through all 79 scenes in episode order (51 from *Castlevania*, 28 from *Nocturne*) and flies the map to each one.
 - **Search**: free text over place names, summaries, characters and on-screen events, so "guillotine" or
   "Olrox" finds a place as readily as "Paris". The map dims what does not match.
 - **Follow a character**: fades out every place a character never visits, across both series.
 - **Journeys**: Isaac's road to Styria, Carmilla's 800-mile march, the castle's jumps, Machecoul to Paris,
-  and the Atlantic crossings on the world inset. Off by default; the Journeys button draws them.
+  Richter's 1783 crossing and Annette's voyages. Off by default; the Journeys button draws them, and a
+  selected place always shows its own crossing.
+- **Places beyond the map**: Boston, Saint-Domingue, Olrox's homeland and northern Japan sit on the map's
+  edge in the real direction of the place, with the true distance on their card and a small world map
+  showing where they are. Story mode flies to them like any other place.
 - **Distance checks**: the show's stated distances compared with real ones.
 - A one-time spoiler notice, since each place says what happens there episode by episode.
 - Themes follow the system by default; the toggle cycles Auto → Light → Dark → Auto, so "follow the system"
@@ -33,7 +37,7 @@ who is involved, the real history behind it, and how its position was worked out
 data/                 the content: edit these to change what the map says
   places.js           every place: position, accuracy tier, events, characters, history, placement notes
                       plus labelRank, the label priority when markers compete for space
-  routes.js           journeys on the main map and voyages on the world inset
+  routes.js           journeys on the main map (crossings start at edge markers) and voyages on the world inset
   episodes.js         episode titles
   links.js            outbound links per place (fan wiki, Wikimedia Commons, Wikipedia)
 geo/
