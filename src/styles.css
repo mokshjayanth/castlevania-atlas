@@ -148,6 +148,11 @@ svg[data-series="noc"] .realm { opacity: 0; }
 .mk .glyph { transition: transform .15s; }
 .mk:hover .glyph, .mk:focus-visible .glyph, .mk.sel .glyph { transform: scale(1.35); }
 @keyframes pulse { 0% { r: 6; opacity: .9; } 100% { r: 22; opacity: 0; } }
+/* The browser's focus box wraps the marker's bounds, pulse included, so it would throb around a selected place.
+   Markers draw their own keyboard focus as a ring on the hit circle instead; mouse and touch focus show nothing. */
+.mk:focus, .world-card .wm:focus, #map:focus:not(:focus-visible) { outline: none; }
+.mk:focus-visible .hit { stroke: var(--focus); stroke-width: 2; }
+.world-card .wm:focus-visible circle.r { stroke: var(--focus); stroke-width: 1.6; }
 .mk.ghost { opacity: 0.8; }
 
 .lbl { font-family: var(--font-map); font-size: 14px; fill: var(--ink); paint-order: stroke; stroke: var(--halo); stroke-width: 3.6px; stroke-linejoin: round; pointer-events: none; }
