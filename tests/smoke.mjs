@@ -106,13 +106,14 @@ try {
     check(await page.evaluate(() => ![...document.querySelectorAll('#map .mk')].some(g => g.classList.contains('dim'))),
       'clearing the search undims the map');
 
-    // journeys stay off until asked for, then all four appear
+    // journeys stay off until asked for, then every one appears
     check((await page.getAttribute('#t-routes', 'aria-pressed')) === 'false', 'journeys are off by default');
     check(await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].every(g => g.classList.contains('era-hide'))),
       'no journey is drawn before the toggle');
     await page.click('#t-routes'); await page.waitForTimeout(300);
     const drawn = await page.evaluate(() => [...document.querySelectorAll('#routes [data-route]')].filter(g => !g.classList.contains('era-hide')).map(g => g.dataset.route));
-    check(drawn.length === 4, `the toggle draws all journeys: ${drawn.join(', ')}`);
+    const allRoutes = await page.locator('#routes [data-route]').count();
+    check(drawn.length === allRoutes && allRoutes >= 6, `the toggle draws all ${allRoutes} journeys: ${drawn.join(', ')}`);
     await page.click('#t-routes'); await page.waitForTimeout(200);
 
     // theme cycles Auto -> Light -> Dark -> Auto, so "follow the system" stays reachable
@@ -230,6 +231,30 @@ try {
     await page.click('#back');
     await page.click('.items button[data-id="machecoul"]'); await page.waitForTimeout(600);
     check((await page.locator('.sect h4', { hasText: 'Sites in and around the town' }).count()) === 1, 'Machecoul card lists its local sites');
+    // places beyond the frame are on the main map, pinned to its edge, with their crossing drawn
+    await page.click('#back');
+    check((await page.locator('.group-h h3', { hasText: 'Beyond the map edge' }).count()) === 0, 'no separate beyond-the-map section');
+    check((await page.locator('.items button[data-id="boston"]').count()) === 1, 'Boston is listed with the Nocturne places');
+    if ((await page.getAttribute('#t-routes', 'aria-pressed')) === 'true') { await page.click('#t-routes'); await page.waitForTimeout(200); }
+    await page.click('.items button[data-id="boston"]'); await page.waitForTimeout(1500);
+    const edge = await page.evaluate(() => {
+      const box = document.querySelector('#map').getBoundingClientRect();
+      const m = document.querySelector('#map .mk[aria-label^="Boston:"]').getBoundingClientRect();
+      const route = document.querySelector('#routes [data-route="richter1783"]');
+      return { inside: m.left >= box.left && m.right <= box.right && m.top >= box.top && m.bottom <= box.bottom, route: !route.classList.contains('era-hide') };
+    });
+    check(edge.inside, 'Boston\'s edge marker is in view after selecting it');
+    check(edge.route, 'selecting Boston draws Richter\'s crossing with journeys off');
+    check((await page.locator('.gaz .world-card').count()) === 1, 'Boston\'s card shows where it really is');
+    check(/km .* of Machecoul/.test(await page.innerText('.gaz')), 'Boston\'s card gives its distance from Machecoul');
+
+    // selecting a marker with the mouse must not draw the browser's focus box around it
+    await page.click('#back');
+    await page.click('[data-view="france"]'); await page.waitForTimeout(1300);
+    await tap(page, '#map .mk[aria-label^="Paris:"]'); await page.waitForTimeout(400);
+    const ring = await page.evaluate(() => { const a = document.activeElement; return a.classList.contains('mk') ? getComputedStyle(a).outlineStyle : 'not focused'; });
+    check(ring === 'none' || ring === 'not focused', `a clicked marker has no focus box (outline: ${ring})`);
+
     check(errs.length === 0, `no script errors in Nocturne mode${errs.length ? `: ${errs[0]}` : ''}`);
     await page.close();
   }
