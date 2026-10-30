@@ -100,6 +100,7 @@ export function fitPlaces(ids, bottomPad = 0) {
 /** bring a place into view at a zoom that suits its uncertainty ring */
 export function focusPlace(p) {
   if (p.view !== 'main') return;
+  if (p.offmap) { fitPlaces([p.id, p.offmap.from]); return; }
   if (p.tier === 'unplaced') { const a = G.vignette.anchor, k = Math.max(S.k, 1.6); flyTo(target(k, a.x - 60 / k, a.y)); return; }
   const z = p.rpx ? Math.max(0.9, (Math.min(S.vw, S.vh) * 0.3) / p.rpx) : Math.max(S.k, 2.4);
   flyTo(target(Math.min(z, 3.0), p.x, p.y));

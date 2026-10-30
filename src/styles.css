@@ -153,6 +153,11 @@ svg[data-series="noc"] .realm { opacity: 0; }
 .mk:focus, .world-card .wm:focus, #map:focus:not(:focus-visible) { outline: none; }
 .mk:focus-visible .hit { stroke: var(--focus); stroke-width: 2; }
 .world-card .wm:focus-visible circle.r { stroke: var(--focus); stroke-width: 1.6; }
+/* places beyond the frame: dot on the edge, arrow pointing the real way */
+.mk .stub { fill: none; stroke-width: 1.3; stroke-dasharray: 2 3; stroke-linecap: round; }
+.mk.cv .stub { stroke: var(--cv); } .mk.noc .stub { stroke: var(--noc); }
+.mk .arr { stroke: var(--halo); stroke-width: 1; stroke-linejoin: round; }
+.mk.cv .arr { fill: var(--cv); } .mk.noc .arr { fill: var(--noc); }
 .mk.ghost { opacity: 0.8; }
 
 .lbl { font-family: var(--font-map); font-size: 14px; fill: var(--ink); paint-order: stroke; stroke: var(--halo); stroke-width: 3.6px; stroke-linejoin: round; pointer-events: none; }

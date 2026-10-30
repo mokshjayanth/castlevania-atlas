@@ -15,7 +15,10 @@
 //       inferred = position reasoned from on-screen clues (r = uncertainty radius in km)
 //       region   = only a country/region is given (r = rough extent in km)
 //       unplaced = fictional site with no geographic clue (drawn in the "unrevealed" vignette)
-// view: 'main' (Europe map) or 'world' (inset of far-off places)
+// view: 'main' (every place is on the map; far-off ones carry offmap)
+// offmap: { from }  the place lies beyond the map frame. Its marker is pinned to the frame's edge in its
+//         real direction from the place `from`, and its card adds the world inset showing where it is.
+// journeys: route ids (data/routes.js) drawn whenever this place is selected or shown in story mode
 
 export const places = [
   // ───────────────────────── CASTLEVANIA ─────────────────────────
@@ -255,7 +258,7 @@ export const places = [
   },
   {
     id: 'japan', name: 'Northern Japan', series: 'cv', kind: 'region', tier: 'region',
-    lat: 39.7, lon: 140.6, r: 250, seasons: ['S3'], view: 'world',
+    lat: 39.7, lon: 140.6, r: 250, seasons: ['S3'], view: 'main', offmap: { from: 'targoviste' },
     summary: 'Where Taka and Sumi were enslaved at a vampire queen\'s court before escaping to Europe to learn to hunt.',
     events: [['S3E2–E4', 'They describe her secret fortress in northern Japan, "far from anywhere", and the other vampires who rule there.']],
     characters: ['Taka', 'Sumi'],
@@ -341,7 +344,7 @@ export const places = [
   },
   {
     id: 'boston', name: 'Boston', series: 'noc', kind: 'city', tier: 'exact',
-    lat: 42.3601, lon: -71.0500, seasons: ['S1'], view: 'world',
+    lat: 42.3601, lon: -71.0500, seasons: ['S1'], view: 'main', offmap: { from: 'machecoul' }, journeys: ['richter1783'],
     summary: 'Prologue, 1783: Julia Belmont dies fighting Olrox at the harbour, and her son Richter is shipped to France.',
     events: [['S1E1', 'Under fireworks in 1783, the year the American War of Independence ended, Julia gets ten-year-old Richter to the harbour. Olrox kills her and spares the boy, who sails to Tera in France.', { ord: 1 }]],
     characters: ['Richter Belmont', 'Julia Belmont', 'Olrox'],
@@ -350,7 +353,7 @@ export const places = [
   },
   {
     id: 'saintdomingue', name: 'Saint-Domingue', alt: 'Haiti', series: 'noc', kind: 'region', tier: 'region',
-    lat: 19.1, lon: -72.6, r: 120, seasons: ['S1', 'S2'], view: 'world',
+    lat: 19.1, lon: -72.6, r: 120, seasons: ['S1', 'S2'], view: 'main', offmap: { from: 'machecoul' }, journeys: ['annette'],
     summary: 'Annette\'s homeland, the French slave colony where she was enslaved, found her powers and fought in the uprising. The series ends with her sailing home.',
     events: [
       ['S1E3', '1780: Annette sees the slaver Vaublanc kill her mother, and her power over earth and metal wakes. Edouard, a free-born opera singer who hides runaways, takes her to the Maroons, where the seer Cécile teaches her. After the uprising, Cécile\'s vision of the Vampire Messiah sends Annette and Edouard to France.', { ord: 1 }],
@@ -362,7 +365,7 @@ export const places = [
   },
   {
     id: 'aztec', name: 'Olrox\'s Homeland', alt: 'Aztec Mexico', series: 'noc', kind: 'region', tier: 'region',
-    lat: 19.4326, lon: -99.1332, r: 220, seasons: ['S1'], view: 'world',
+    lat: 19.4326, lon: -99.1332, r: 220, seasons: ['S1'], view: 'main', offmap: { from: 'machecoul' },
     summary: 'Olrox is an Aztec vampire who lived through the Spanish conquest of his people. His grudge against the Belmonts began when Julia Belmont killed the one he loved.',
     events: [['S1E6', 'Olrox tells how the conquistadors destroyed his homeland, and how Julia Belmont killed the one he loved.', { ord: 6 }]],
     characters: ['Olrox', 'Julia Belmont'],
@@ -387,4 +390,5 @@ export const unmapped = [
 export const labelRank = [
   'targoviste', 'gresit', 'braila', 'styria', 'lindenfeld', 'machecoul', 'paris', 'tunis', 'genoa', 'magician',
   'desert', 'egypt', 'arges', 'severin', 'chilia', 'enisala', 'rhodes', 'whitby', 'london', 'cachtice',
+  'boston', 'saintdomingue', 'aztec', 'japan',
 ];

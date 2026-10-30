@@ -10,6 +10,10 @@ export const routes = [
     legs: [ { kind: 'road', pts: ['braila', [25.0, 44.55], [22.3, 44.9], [19.6, 45.9], [17.0, 46.6], 'styria'] } ] },
   { id: 'castle', series: 'cv', name: 'The castle\'s jumps', seasons: 'S2', who: ['Dracula', 'Alucard', 'Carmilla', 'Hector', 'Isaac', 'Godbrand'],
     legs: [ { kind: 'teleport', pts: ['castleA', 'braila'] }, { kind: 'teleport', pts: ['braila', 'VIGNETTE'] } ] },
+  { id: 'richter1783', series: 'noc', name: 'Richter\'s crossing', note: '1783', who: ['Richter Belmont'],
+    legs: [ { kind: 'sea', pts: ['boston', [-12.5, 46.9], [-5.0, 46.75], 'machecoul'] } ] },
+  { id: 'annette', series: 'noc', name: 'Annette\'s crossings', note: 'S1E3 · S2E8', who: ['Annette', 'Edouard', 'Richter Belmont'],
+    legs: [ { kind: 'sea', pts: ['saintdomingue', [-11.0, 44.6], [-4.6, 46.2], 'machecoul'] } ] },
   { id: 'nocturne', series: 'noc', name: 'Machecoul to Paris', seasons: 'Nocturne S2', who: ['Alucard', 'Richter Belmont', 'Annette'],
     legs: [ { kind: 'road', pts: ['machecoul', [-0.6, 47.4], [0.9, 47.85], 'paris'] } ] },
 ];

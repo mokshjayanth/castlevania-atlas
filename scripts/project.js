@@ -40,10 +40,44 @@ for (const f of regions.features) out.paths[f.properties.region.toLowerCase()] =
 out.proj = params({ proj, H });
 
 // ── places
+// Places beyond the frame are pinned to its edge along the rhumb line from a home place on the map,
+// so "west" on the map means west; their real coordinates and great-circle distance stay for the card.
+const EDGE_MARGIN = 46;
+const COMPASS = ['north', 'north-north-east', 'north-east', 'east-north-east', 'east', 'east-south-east', 'south-east', 'south-south-east',
+  'south', 'south-south-west', 'south-west', 'west-south-west', 'west', 'west-north-west', 'north-west', 'north-north-west'];
+const merc = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+const imerc = y => (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI;
+const greatCircleKm = (a, b) => d3.geoDistance(a, b) * 6371;
+function edgeMarker(from, to) {
+  let dl = to[0] - from[0];
+  if (dl > 180) dl -= 360;
+  if (dl < -180) dl += 360;
+  const y0 = merc(from[1]), y1 = merc(to[1]);
+  const inside = q => q[0] > EDGE_MARGIN && q[0] < W - EDGE_MARGIN && q[1] > EDGE_MARGIN && q[1] < H - EDGE_MARGIN;
+  let last = proj(from), prev = last;
+  for (let t = 0.0005; t <= 1; t += 0.0005) {
+    const q = proj([from[0] + dl * t, imerc(y0 + (y1 - y0) * t)]);
+    if (!inside(q)) break;
+    prev = last; last = q;
+  }
+  if (inside(proj(to))) throw new Error(`offmap place at ${to} is inside the frame; drop offmap for it`);
+  const bearing = (Math.atan2(dl * Math.PI / 180, y1 - y0) * 180 / Math.PI + 360) % 360;
+  return {
+    x: +last[0].toFixed(1), y: +last[1].toFixed(1),
+    dir: Math.round(Math.atan2(last[1] - prev[1], last[0] - prev[0]) * 180 / Math.PI),
+    compass: COMPASS[Math.round(bearing / 22.5) % 16],
+  };
+}
 const byId = {};
 out.places = places.map(p => {
   const o = { ...p };
-  if (p.view === 'main' && p.tier !== 'unplaced') {
+  if (p.offmap) {
+    const from = places.find(q => q.id === p.offmap.from);
+    if (!from) throw new Error(`${p.id}: offmap.from "${p.offmap.from}" is not a place`);
+    const e = edgeMarker([from.lon, from.lat], [p.lon, p.lat]);
+    o.x = e.x; o.y = e.y;
+    o.offmap = { from: from.id, fromName: from.name, dir: e.dir, compass: e.compass, km: Math.round(greatCircleKm([from.lon, from.lat], [p.lon, p.lat]) / 10) * 10 };
+  } else if (p.view === 'main' && p.tier !== 'unplaced') {
     Object.assign(o, P(p.lon, p.lat));
     if (p.r) o.rpx = +kmToPx(p.lon, p.lat, p.r).toFixed(1);
   }
@@ -170,7 +204,7 @@ for (let la = 59.5; la >= 25; la -= 0.5) frame.coordinates[0].push([-11, la]);
 out.world = {
   W: IW, H: IH, land: wpath(wl), frame: wpath({ type: 'LineString', coordinates: frame.coordinates[0] }),
   graticule: wpath(d3.geoGraticule().step([30, 30])()),
-  places: places.filter(p => p.view === 'world').map(p => { const q = wp([p.lon, p.lat]); return { id: p.id, x: +q[0].toFixed(1), y: +q[1].toFixed(1) }; }),
+  places: places.filter(p => p.offmap).map(p => { const q = wp([p.lon, p.lat]); return { id: p.id, x: +q[0].toFixed(1), y: +q[1].toFixed(1) }; }),
 };
 out.unmapped = unmapped;
 out.titles = titles;
