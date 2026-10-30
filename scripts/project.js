@@ -106,7 +106,7 @@ out.labels = [
   L('Apennines', 13.4, 42.4, 'mtn', 'all', 45), L('Pyrenees', 0.6, 42.55, 'mtn', 'all', 8),
   L('Dinaric Alps', 17.6, 43.75, 'mtn', 'all', 35), L('Atlas', -2.2, 33.0, 'mtn', 'all', -20),
   // story regions (always)
-  L('Wallachia', 25.3, 44.12, 'story', 'all'), L('Styria', 15.0, 47.95, 'story', 'all'),
+  L('Wallachia', 25.3, 44.12, 'story', 'cv'), L('Styria', 15.0, 47.95, 'story', 'cv'),
   // 1476 politics
   L('Transylvania', 24.6, 46.45, 'pol', 'cv'), L('Moldavia', 27.3, 47.15, 'pol', 'cv'),
   L('Kingdom of Hungary', 19.3, 47.55, 'pol', 'cv'), L('Ottoman Empire', 23.4, 41.75, 'pol', 'cv'),

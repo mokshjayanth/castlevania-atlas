@@ -9,7 +9,7 @@ import { select } from './gazetteer.js';
 const R = Math.PI / 180;
 const VW = 196, VH = 104; // vignette box, screen pixels
 const marks = [], routeEls = [];
-let texts = [], cities = [], vigG, VG, VGc, vgMarks = [];
+let texts = [], cities = [], vigG, VG, VGc, vgMarks = [], leader;
 
 export const vgCompact = () => S.k < 0.6;
 
@@ -83,8 +83,8 @@ export function buildOverlay() {
     t.textContent = r.name + (r.note ? ` · ${r.note}` : '');
     routeEls.push({ r, grp, t, at });
   }
-  // leader from the vignette to Wallachia
-  { const a = G.vignette.anchor, b = G.vignette.leaderTo; el('path', { class: 'leader', d: `M${a.x},${a.y} Q${(a.x + b.x) / 2},${Math.min(a.y, b.y) - 60} ${b.x},${b.y}` }, routesG); }
+  // leader from the vignette to Wallachia (Castlevania only)
+  { const a = G.vignette.anchor, b = G.vignette.leaderTo; leader = el('path', { class: 'leader', d: `M${a.x},${a.y} Q${(a.x + b.x) / 2},${Math.min(a.y, b.y) - 60} ${b.x},${b.y}` }, routesG); }
 
   buildVignette();
 }
@@ -168,7 +168,10 @@ export function drawOverlay() {
     VG.classList.toggle('era-hide', vgCompact()); VGc.classList.toggle('era-hide', !vgCompact());
     vigG.classList.toggle('era-hide', S.series === 'noc'); }
   for (const v of vgMarks) { v.g.classList.toggle('sel', S.sel === v.p.id || S.hl.includes(v.p.id)); v.g.classList.toggle('dim', !matchFilters(v.p)); }
-  VGc.classList.toggle('dim', !vgMarks.some(v => matchFilters(v.p)));
+  const vgMatch = vgMarks.some(v => matchFilters(v.p));
+  VGc.classList.toggle('dim', !vgMatch);
+  leader.classList.toggle('era-hide', S.series === 'noc');
+  leader.classList.toggle('dim', !vgMatch);
   placeLabels();
 }
 
