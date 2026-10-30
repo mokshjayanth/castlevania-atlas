@@ -60,7 +60,7 @@ try {
     await page.goto(URL_); await page.waitForTimeout(1200);
     check((await page.locator('#spoiler[open]').count()) === 1, 'first visit shows the spoiler notice');
     check(await page.evaluate(() => document.activeElement && document.activeElement.id === 'sp-ok'), 'spoiler notice takes focus');
-    // Nocturne S2E5 is not cited by any place, so the notice must not claim every episode
+    // coverage is near-complete but shifts with the data, so the notice must claim no specific extent
     check(!/every episode|all \d+ episodes/i.test(await page.innerText('#spoiler')), 'the notice makes no every-episode claim');
     await enter(page);
     check((await page.locator('#spoiler').count()) === 0, 'accepting the notice dismisses it');
@@ -217,7 +217,8 @@ try {
     const leaks = await page.evaluate(() => {
       const visible = e => { for (let n = e; n && n.nodeType === 1; n = n.parentNode) { const cs = getComputedStyle(n); if (cs.display === 'none' || +cs.opacity === 0) return false; } return true; };
       const out = [];
-      document.querySelectorAll('#routes > *').forEach(e => { const r = e.getAttribute('data-route'); if (visible(e) && r !== 'nocturne') out.push(r || e.getAttribute('class')); });
+      // routes carry their series, so this holds as journeys are added; the leader has no data-series
+      document.querySelectorAll('#routes > *').forEach(e => { if (visible(e) && e.getAttribute('data-series') !== 'noc') out.push(e.getAttribute('data-route') || e.getAttribute('class')); });
       document.querySelectorAll('#ov-text .tx.story, .realm').forEach(e => { if (visible(e)) out.push(e.textContent || 'realm outline'); });
       document.querySelectorAll('#ov-marks .mk.cv, #ov-vignette .mk').forEach(e => { if (visible(e)) out.push(e.getAttribute('aria-label')); });
       return out;
