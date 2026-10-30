@@ -13,6 +13,8 @@ export function setSeries(s, quiet) {
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.series === s ? 'true' : 'false'));
   if (!quiet) { try { localStorage.setItem('cva-series', s); } catch (e) { /* storage unavailable */ } }
   if (S.sel && !shown(byId[S.sel])) S.sel = null;
+  // jump chips for a theatre only appear when its series is in view
+  document.querySelectorAll('.views [data-only]').forEach(b => { b.hidden = s !== 'all' && b.dataset.only !== s; });
   if (!quiet) { if (S.sel) renderDetail(byId[S.sel]); else renderIndex(); }
   render();
 }
@@ -23,7 +25,7 @@ export function initControls() {
   document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
     if (S.story >= 0) storyClose();
     setSeries(b.dataset.series);
-    if (b.dataset.series === 'noc') fitLL(-4.5, 44.0, 6.0, 51.0);
+    if (b.dataset.series === 'noc') fitLL(...VIEWS.france);
     else if (b.dataset.series === 'cv') fitLL(...VIEWS.wallachia);
   }));
   const routesBtn = $('#t-routes');

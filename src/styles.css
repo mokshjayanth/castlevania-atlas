@@ -183,6 +183,7 @@ svg[data-zl="3"] .tx.pol { opacity: 0.45; }
 .views { top: 10px; left: 10px; flex-wrap: wrap; max-width: calc(100% - 80px); }
 .chip { font-family: var(--font-sc); font-size: 0.8rem; color: var(--ink-2); background: var(--panel); border: 1px solid var(--rule); padding: 5px 10px; cursor: pointer; border-radius: 2px; }
 .chip:hover { color: var(--ink); }
+.chip .sw { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 1px; }
 .zoom { right: 10px; bottom: 10px; flex-direction: column; gap: 0; border: 1px solid var(--rule); background: var(--panel); }
 .zoom button { width: 34px; height: 32px; background: transparent; border: 0; color: var(--ink); font-family: var(--font-display); font-size: 1.05rem; cursor: pointer; }
 .zoom button + button { border-top: 1px solid var(--rule); }

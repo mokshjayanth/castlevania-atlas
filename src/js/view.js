@@ -13,7 +13,7 @@ export const kMin = () => Math.min(S.vw / G.W, S.vh / G.H) * 0.98;
 export const scr = (x, y) => [x * S.k + S.tx, y * S.k + S.ty];
 
 export const VIEWS = {
-  wallachia: [21.6, 43.4, 30.6, 46.4], isaac: [6.5, 32.0, 17.5, 48.4], france: [-3.6, 45.6, 4.0, 50.0],
+  wallachia: [21.6, 43.4, 30.6, 46.4], france: [-3.6, 45.6, 4.0, 50.0],
   all: [-11, 25, 39, 59.5], start: [-4.5, 34.8, 37.2, 54.5],
   // phones: open on the Mediterranean core so the map overflows the screen and can be panned
   startNarrow: [4.0, 36.5, 30.0, 50.5],
